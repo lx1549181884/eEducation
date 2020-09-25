@@ -41,6 +41,8 @@ import io.agora.sdk.manager.RtmManager;
 
 public class MainActivity extends BaseActivity {
 
+    public static boolean isTeacher = true;
+
     private final int REQUEST_CODE_DOWNLOAD = 100;
     private final int REQUEST_CODE_RTC = 101;
 
@@ -88,8 +90,8 @@ public class MainActivity extends BaseActivity {
     protected void initView() {
         new PolicyDialog().show(getSupportFragmentManager(), null);
         if (BuildConfig.DEBUG) {
-            et_room_name.setText("123");
-            et_your_name.setText("123");
+            et_room_name.setText("lx");
+            et_your_name.setText(isTeacher ? "teacher" : "student");
         }
     }
 
@@ -182,6 +184,7 @@ public class MainActivity extends BaseActivity {
             roomName = roomNameStr;
             roomUuid = roomNameStr;
             type = classType;
+            role = isTeacher ? 1 : 2;
         }}).enqueue(new BaseCallback<>(data -> {
             RetrofitManager.instance().addHeader("token", data.userToken);
             room(data.roomId);

@@ -14,6 +14,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.agora.education.MainActivity;
 import io.agora.education.R;
 import io.agora.education.classroom.adapter.ClassVideoAdapter;
 import io.agora.education.classroom.bean.channel.Room;
@@ -89,7 +90,7 @@ public class SmallClassActivity extends BaseClassActivity implements SmallClassC
 
     @Override
     public void onGrantWhiteboard(boolean granted) {
-        whiteboardFragment.disableDeviceInputs(!granted);
+        whiteboardFragment.disableDeviceInputs(MainActivity.isTeacher ? false : !granted);
     }
 
     @Override

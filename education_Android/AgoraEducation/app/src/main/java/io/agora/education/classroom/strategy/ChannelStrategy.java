@@ -50,18 +50,8 @@ public abstract class ChannelStrategy<T> {
     }
 
     @NonNull
-    public final List<User> getOthers() {
-        return channelInfo.getOthers();
-    }
-
     public final List<User> getAllUsers() {
-        List<User> users = new ArrayList<>();
-        if (getTeacher() != null) {
-            users.add(getTeacher());
-        }
-        users.add(getLocal());
-        users.addAll(getOthers());
-        return users;
+        return channelInfo.getAll();
     }
 
     public final void updateRoom(Room room) {
@@ -81,16 +71,14 @@ public abstract class ChannelStrategy<T> {
     }
 
     public final void updateCoVideoUsers(@NonNull List<User> users) {
-        List<User> others = new ArrayList<>();
         User local = null;
         User teacher = null;
         for (User user : users) {
             if (user.isTeacher()) {
                 teacher = user;
-            } else if (TextUtils.equals(user.userId, getLocal().userId)) {
+            }
+            if (TextUtils.equals(user.userId, getLocal().userId)) {
                 local = user;
-            } else {
-                others.add(user);
             }
         }
 
@@ -100,7 +88,7 @@ public abstract class ChannelStrategy<T> {
             }
         }
         channelInfo.updateTeacher(teacher);
-        channelInfo.updateOthers(others);
+        channelInfo.updateAll(users);
 
         onCoVideoUsersChanged();
     }

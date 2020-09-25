@@ -20,11 +20,11 @@ public class ChannelInfo extends JsonBean {
     private volatile Room room;
     private volatile User local;
     private volatile User teacher;
-    private volatile List<User> others;
+    private volatile List<User> all;
 
     public ChannelInfo(@NonNull User local) {
         this.local = local;
-        this.others = new ArrayList<>();
+        this.all = new ArrayList<>();
     }
 
     @Nullable
@@ -43,8 +43,8 @@ public class ChannelInfo extends JsonBean {
     }
 
     @NonNull
-    public List<User> getOthers() {
-        return others;
+    public List<User> getAll() {
+        return all;
     }
 
     public boolean updateRoom(@NonNull Room room) {
@@ -94,15 +94,15 @@ public class ChannelInfo extends JsonBean {
         return true;
     }
 
-    public boolean updateOthers(@NonNull List<User> others) {
+    public boolean updateAll(@NonNull List<User> all) {
         Gson gson = new Gson();
-        String json = gson.toJson(others);
-        if (TextUtils.equals(json, gson.toJson(this.others))) {
+        String json = gson.toJson(all);
+        if (TextUtils.equals(json, gson.toJson(this.all))) {
             return false;
         }
-        log.d("updateOthers %s", json);
-        this.others.clear();
-        this.others.addAll(others);
+        log.d("updateAll %s", json);
+        this.all.clear();
+        this.all.addAll(all);
         return true;
     }
 
