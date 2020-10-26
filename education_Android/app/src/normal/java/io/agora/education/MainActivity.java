@@ -5,14 +5,18 @@ import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+
+import com.blankj.utilcode.util.TimeUtils;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +39,7 @@ import io.agora.education.base.BaseCallback;
 import io.agora.education.broadcast.DownloadReceiver;
 import io.agora.education.classroom.BaseClassActivity;
 import io.agora.education.classroom.BreakoutClassActivity;
-import io.agora.education.classroom.LargeClassActivity;
+import io.agora.education.classroom.JhbClassActivity;
 import io.agora.education.classroom.OneToOneClassActivity;
 import io.agora.education.classroom.SmallClassActivity;
 import io.agora.education.classroom.bean.channel.Room;
@@ -71,6 +75,8 @@ public class MainActivity extends BaseActivity {
     protected EditText et_room_type;
     @BindView(R.id.card_room_type)
     protected CardView card_room_type;
+    @BindView(R.id.rb_anchor)
+    protected RadioButton rb_anchor;
 
     private DownloadReceiver receiver;
     private CommonService commonService;
@@ -97,9 +103,9 @@ public class MainActivity extends BaseActivity {
     protected void initView() {
         new PolicyDialog().show(getSupportFragmentManager(), null);
         if (BuildConfig.DEBUG) {
-            et_room_name.setText("123");
+            et_room_name.setText(TimeUtils.getNowString().split(" ")[0]);
             et_room_name.setSelection(et_room_name.length());
-            et_your_name.setText("123");
+            et_your_name.setText(Build.MODEL);
         }
     }
 
@@ -241,6 +247,8 @@ public class MainActivity extends BaseActivity {
             return;
         }
 
+        boolean isAnchor = rb_anchor.isChecked();
+
         /**userUuid和roomUuid需用户自己指定，并保证唯一性*/
         int roomType = getClassType(roomTypeStr);
         String userUuid = yourNameStr + EduUserRole.STUDENT.getValue();
@@ -257,7 +265,7 @@ public class MainActivity extends BaseActivity {
                 if (res != null) {
                     Log.e(TAG, "初始化EduManager成功");
                     setManager(res);
-                    createRoom(yourNameStr, userUuid, roomNameStr, roomUuid, roomType);
+                    createRoom(yourNameStr, userUuid, roomNameStr, roomUuid, roomType, isAnchor);
                 }
             }
 
@@ -281,7 +289,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void createRoom(String yourNameStr, String yourUuid, String roomNameStr, String roomUuid, int roomType) {
+    private void createRoom(String yourNameStr, String yourUuid, String roomNameStr, String roomUuid, int roomType, boolean isAnchor) {
         /**createClassroom时，room不存在则新建，存在则返回room信息(此接口非必须调用)，
          * 只要保证在调用joinClassroom之前，classroom在服务端存在即可*/
         RoomCreateOptions options = new RoomCreateOptions(roomUuid, roomNameStr, roomType);
@@ -293,7 +301,7 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onSuccess(@Nullable ResponseBody<String> res) {
                         Log.e(TAG, "调用scheduleClass函数成功");
-                        Intent intent = createIntent(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType);
+                        Intent intent = createIntent(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType, isAnchor);
                         startActivityForResult(intent, REQUEST_CODE_RTE);
                     }
 
@@ -308,7 +316,7 @@ public class MainActivity extends BaseActivity {
                         Log.e(TAG, "调用scheduleClass函数失败->" + error.getCode() + ", reason:" +
                                 error.getMessage());
                         if (error.getCode() == AgoraError.ROOM_ALREADY_EXISTS.getValue()) {
-                            Intent intent = createIntent(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType);
+                            Intent intent = createIntent(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType, isAnchor);
                             startActivityForResult(intent, REQUEST_CODE_RTE);
                         } else {
                             Log.e(TAG, "排课失败");
@@ -318,8 +326,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private Intent createIntent(String yourNameStr, String yourUuid, String roomNameStr,
-                                String roomUuid, @Room.Type int roomType) {
-        RoomEntry roomEntry = new RoomEntry(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType);
+                                String roomUuid, @Room.Type int roomType, boolean isAnchor) {
+        RoomEntry roomEntry = new RoomEntry(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType, isAnchor);
 
         Intent intent = new Intent();
         if (roomType == RoomType.ONE_ON_ONE.getValue()) {
@@ -327,7 +335,7 @@ public class MainActivity extends BaseActivity {
         } else if (roomType == RoomType.SMALL_CLASS.getValue()) {
             intent.setClass(this, SmallClassActivity.class);
         } else if (roomType == RoomType.LARGE_CLASS.getValue()) {
-            intent.setClass(this, LargeClassActivity.class);
+            intent.setClass(this, JhbClassActivity.class);
         } else {
             intent.setClass(this, BreakoutClassActivity.class);
         }

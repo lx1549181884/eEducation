@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="powered_by_agora_io" translatable="false">Powered by agora.io</string>
+    <string name="powered_by_agora_io" translatable="false">Powered by JIHUIBAO</string>
     <string name="hint_your_name">Your Name</string>
     <string name="eye_care_mode">Eye protection</string>
     <string name="join">Join</string>

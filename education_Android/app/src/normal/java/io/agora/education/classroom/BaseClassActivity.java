@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -33,13 +32,13 @@ import io.agora.education.api.message.EduChatMsg;
 import io.agora.education.api.message.EduChatMsgType;
 import io.agora.education.api.message.EduMsg;
 import io.agora.education.api.room.EduRoom;
+import io.agora.education.api.room.data.EduRoomChangeType;
 import io.agora.education.api.room.data.EduRoomInfo;
 import io.agora.education.api.room.data.EduRoomState;
 import io.agora.education.api.room.data.EduRoomStatus;
 import io.agora.education.api.room.data.RoomCreateOptions;
 import io.agora.education.api.room.data.RoomJoinOptions;
 import io.agora.education.api.room.data.RoomMediaOptions;
-import io.agora.education.api.room.data.EduRoomChangeType;
 import io.agora.education.api.room.data.RoomType;
 import io.agora.education.api.room.listener.EduRoomEventListener;
 import io.agora.education.api.statistics.ConnectionState;
@@ -162,11 +161,16 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
 
     protected void joinRoom(EduRoom eduRoom, String yourNameStr, String yourUuid, boolean autoSubscribe,
                             boolean autoPublish, boolean needUserListener, EduCallback<EduStudent> callback) {
+        joinRoom(eduRoom, yourNameStr, yourUuid, autoSubscribe, autoPublish, needUserListener, callback, false);
+    }
+
+    protected void joinRoom(EduRoom eduRoom, String yourNameStr, String yourUuid, boolean autoSubscribe,
+                            boolean autoPublish, boolean needUserListener, EduCallback<EduStudent> callback, boolean isAnchor) {
         if (isJoining) {
             return;
         }
         isJoining = true;
-        RoomJoinOptions options = new RoomJoinOptions(yourUuid, yourNameStr, EduUserRole.STUDENT,
+        RoomJoinOptions options = new RoomJoinOptions(yourUuid, yourNameStr, isAnchor ? EduUserRole.TEACHER : EduUserRole.STUDENT,
                 new RoomMediaOptions(autoSubscribe, autoPublish));
         eduRoom.joinClassroom(options, new EduCallback<EduStudent>() {
             @Override

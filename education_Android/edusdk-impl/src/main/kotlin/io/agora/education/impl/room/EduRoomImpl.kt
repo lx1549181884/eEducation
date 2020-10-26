@@ -13,25 +13,26 @@ import io.agora.education.api.EduCallback
 import io.agora.education.api.logger.LogLevel
 import io.agora.education.api.room.EduRoom
 import io.agora.education.api.room.data.*
-import io.agora.education.api.user.EduStudent
-import io.agora.education.api.user.data.EduUserInfo
-import io.agora.education.api.user.data.EduUserRole
-import io.agora.education.impl.util.Convert
 import io.agora.education.api.statistics.NetworkQuality
-import io.agora.education.api.stream.data.*
+import io.agora.education.api.stream.data.EduStreamEvent
+import io.agora.education.api.stream.data.EduStreamInfo
+import io.agora.education.api.stream.data.LocalStreamInitOptions
+import io.agora.education.api.user.EduStudent
 import io.agora.education.api.user.EduUser
 import io.agora.education.api.user.data.EduChatState
+import io.agora.education.api.user.data.EduUserInfo
+import io.agora.education.api.user.data.EduUserRole
 import io.agora.education.impl.ResponseBody
 import io.agora.education.impl.board.EduBoardImpl
-import io.agora.education.impl.cmd.bean.CMDResponseBody
 import io.agora.education.impl.cmd.CMDDispatch
+import io.agora.education.impl.cmd.bean.CMDResponseBody
 import io.agora.education.impl.manager.EduManagerImpl
 import io.agora.education.impl.network.RetrofitManager
 import io.agora.education.impl.record.EduRecordImpl
 import io.agora.education.impl.role.data.EduUserRoleStr
 import io.agora.education.impl.room.data.EduRoomInfoImpl
 import io.agora.education.impl.room.data.request.EduJoinClassroomReq
-import io.agora.education.impl.room.data.response.*
+import io.agora.education.impl.room.data.response.EduEntryRes
 import io.agora.education.impl.sync.RoomSyncHelper
 import io.agora.education.impl.sync.RoomSyncSession
 import io.agora.education.impl.user.EduStudentImpl
@@ -39,11 +40,16 @@ import io.agora.education.impl.user.EduUserImpl
 import io.agora.education.impl.user.data.EduLocalUserInfoImpl
 import io.agora.education.impl.user.network.UserService
 import io.agora.education.impl.util.CommonUtil
-import io.agora.rtc.Constants.*
+import io.agora.education.impl.util.Convert
+import io.agora.rtc.Constants.CLIENT_ROLE_AUDIENCE
+import io.agora.rtc.Constants.CLIENT_ROLE_BROADCASTER
 import io.agora.rtc.models.ChannelMediaOptions
 import io.agora.rte.RteEngineImpl
 import io.agora.rte.listener.RteChannelEventListener
-import io.agora.rtm.*
+import io.agora.rtm.ErrorInfo
+import io.agora.rtm.ResultCallback
+import io.agora.rtm.RtmChannelMember
+import io.agora.rtm.RtmMessage
 import kotlin.math.max
 
 internal class EduRoomImpl(
@@ -134,7 +140,7 @@ internal class EduRoomImpl(
             AgoraLog.i("$TAG->没有传userName,使用默认用户名赋值:$defaultUserName")
             options.userName = defaultUserName
         }
-        val localUserInfo = EduLocalUserInfoImpl(options.userUuid, options.userName!!, EduUserRole.STUDENT,
+        val localUserInfo = EduLocalUserInfoImpl(options.userUuid, options.userName!!, options.roleType,
                 true, null, mutableListOf(), System.currentTimeMillis())
         /**此处需要把localUserInfo设置进localUser中*/
         syncSession.localUser = EduStudentImpl(localUserInfo)
