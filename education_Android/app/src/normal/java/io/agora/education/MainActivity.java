@@ -20,6 +20,8 @@ import com.blankj.utilcode.util.TimeUtils;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTouch;
@@ -103,7 +105,7 @@ public class MainActivity extends BaseActivity {
     protected void initView() {
         new PolicyDialog().show(getSupportFragmentManager(), null);
         if (BuildConfig.DEBUG) {
-            et_room_name.setText(TimeUtils.getNowString().split(" ")[0]);
+            et_room_name.setText(Pattern.compile("[\\D]").matcher(TimeUtils.getNowString().split(" ")[0]).replaceAll("").trim());
             et_room_name.setSelection(et_room_name.length());
             et_your_name.setText(Build.MODEL);
         }

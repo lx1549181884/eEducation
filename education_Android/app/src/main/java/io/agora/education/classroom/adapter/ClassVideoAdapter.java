@@ -7,11 +7,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 
+import com.blankj.utilcode.util.ScreenUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,8 +68,8 @@ public class ClassVideoAdapter extends BaseQuickAdapter<EduStreamInfo, ClassVide
     protected ViewHolder onCreateDefViewHolder(@NonNull ViewGroup parent, int viewType) {
         RtcVideoView item = new RtcVideoView(getContext());
         item.init(R.layout.layout_video_small_class, false);
-        int width = getContext().getResources().getDimensionPixelSize(R.dimen.dp_95);
-        int height = parent.getHeight() - parent.getPaddingTop() - parent.getPaddingBottom();
+        int width = ViewGroup.LayoutParams.MATCH_PARENT;
+        int height = (int) (ScreenUtils.getAppScreenWidth() * 0.7 / 2);
         item.setLayoutParams(new ViewGroup.LayoutParams(width, height));
         return new ViewHolder(item);
     }

@@ -68,6 +68,7 @@ import io.agora.education.classroom.bean.record.RecordMsg;
 import io.agora.education.classroom.fragment.ChatRoomFragment;
 import io.agora.education.classroom.fragment.WhiteBoardFragment;
 import io.agora.education.classroom.widget.TitleView;
+import io.agora.education.lx.LogUtil;
 import io.agora.education.service.BoardService;
 import io.agora.education.service.bean.ResponseBody;
 import io.agora.education.widget.ConfirmDialog;
@@ -285,11 +286,15 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
     }
 
     protected List<EduStreamInfo> getCurFullStream() {
-        return (getMyMediaRoom() != null) ? getMyMediaRoom().getFullStreamList() : null;
+        List<EduStreamInfo> list = (getMyMediaRoom() != null) ? getMyMediaRoom().getFullStreamList() : null;
+        LogUtil.log("getCurFullStream", list);
+        return list;
     }
 
     protected List<EduUserInfo> getCurFullUser() {
-        return (getMyMediaRoom() != null) ? getMyMediaRoom().getFullUserList() : null;
+        List<EduUserInfo> list = (getMyMediaRoom() != null) ? getMyMediaRoom().getFullUserList() : null;
+        LogUtil.log("getCurFullUser", list);
+        return list;
     }
 
     protected EduStreamInfo getTeacherStream() {

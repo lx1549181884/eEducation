@@ -11,7 +11,6 @@ import com.chad.library.adapter.base.listener.OnItemChildClickListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -53,6 +52,10 @@ public class UserListFragment extends BaseFragment implements OnItemChildClickLi
         rcv_users.setAdapter(adapter);
     }
 
+    public void setUserList(List<EduStreamInfo> covideoAudiences, List<EduUserInfo> audiences) {
+        adapter.setNewData(covideoAudiences, audiences);
+    }
+
     public void setUserList(List<EduStreamInfo> userList) {
         getActivity().runOnUiThread(() -> {
             /**过滤掉非学生和非摄像头流的user*/
@@ -75,7 +78,7 @@ public class UserListFragment extends BaseFragment implements OnItemChildClickLi
                     }
                 }
             }
-            adapter.setNewData(students);
+            adapter.setNewData(students, null);
         });
     }
 
@@ -89,6 +92,9 @@ public class UserListFragment extends BaseFragment implements OnItemChildClickLi
     }
 
     public void updateLocalStream(EduStreamInfo streamInfo) {
+        if (streamInfo == null) {
+            return;
+        }
         getActivity().runOnUiThread(() -> {
             if (rcv_users.isComputingLayout()) {
                 rcv_users.postDelayed(() -> {
