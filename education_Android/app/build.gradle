@@ -102,4 +102,5 @@ dependencies {
     implementation 'com.tencent.bugly:nativecrashreport:latest.release' //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
 
     implementation 'com.blankj:utilcodex:1.29.0'
+    implementation 'org.conscrypt:conscrypt-android:2.5.0'
 }

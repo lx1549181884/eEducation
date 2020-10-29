@@ -14,6 +14,8 @@ import com.herewhite.sdk.domain.GlobalState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,9 +71,11 @@ import io.agora.education.classroom.fragment.ChatRoomFragment;
 import io.agora.education.classroom.fragment.WhiteBoardFragment;
 import io.agora.education.classroom.widget.TitleView;
 import io.agora.education.lx.LogUtil;
+import io.agora.education.lx.UserProperty;
 import io.agora.education.service.BoardService;
 import io.agora.education.service.bean.ResponseBody;
 import io.agora.education.widget.ConfirmDialog;
+import kotlin.Unit;
 
 import static io.agora.education.EduApplication.getAppId;
 import static io.agora.education.EduApplication.getManager;
@@ -179,12 +183,25 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
                 /**设置全局的userToken(注意同一个user在不同的room内，token不一样)*/
                 RetrofitManager.instance().addHeader("token",
                         getMainEduRoom().getLocalUser().getUserInfo().getUserToken());
-                joinSuccess = true;
-                isJoining = false;
-                if (needUserListener) {
-                    eduRoom.getLocalUser().setEventListener(BaseClassActivity.this);
-                }
-                callback.onSuccess(res);
+                EduUser localUser = eduRoom.getLocalUser();
+                Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.role.class.getSimpleName(), roomEntry.getRole());
+                localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
+                    @Override
+                    public void onSuccess(@Nullable Unit unit) {
+                        joinSuccess = true;
+                        isJoining = false;
+                        if (needUserListener) {
+                            eduRoom.getLocalUser().setEventListener(BaseClassActivity.this);
+                        }
+                        callback.onSuccess(res);
+                    }
+
+                    @Override
+                    public void onFailure(int code, @Nullable String reason) {
+                        isJoining = false;
+                        callback.onFailure(code, reason);
+                    }
+                });
             }
 
             @Override
@@ -490,8 +507,8 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
             BoardInfo info = mainBoardBean.getInfo();
             Log.e(TAG, "白板信息已存在->" + boardJson);
             runOnUiThread(() -> {
-                whiteboardFragment.initBoardWithRoomToken(info.getBoardId(),
-                        info.getBoardToken(), getLocalUserInfo().getUserUuid());
+//                whiteboardFragment.initBoardWithRoomToken(info.getBoardId(),
+//                        info.getBoardToken(), getLocalUserInfo().getUserUuid());
 //                boolean follow = whiteBoardIsFollowMode(state);
 //                if (follow) {
 //                    layout_whiteboard.setVisibility(View.VISIBLE);

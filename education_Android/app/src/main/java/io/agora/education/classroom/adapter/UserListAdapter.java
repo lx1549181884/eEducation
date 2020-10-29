@@ -9,14 +9,18 @@ import androidx.annotation.NonNull;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.agora.education.R;
 import io.agora.education.api.stream.data.EduStreamInfo;
 import io.agora.education.api.user.data.EduUserInfo;
+import io.agora.education.lx.UserProperty;
 
 public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapter.ViewHolder> {
 
@@ -71,7 +75,7 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
                 break;
             }
         }
-        viewHolder.tv_name.setText(userInfo.getUserName());
+        viewHolder.tv_name.setText(getRole(userInfo) + " " + userInfo.getUserName());
         viewHolder.iv_btn_grant_board.setSelected(grantedUuids.contains(userInfo.getUserUuid()));
         viewHolder.iv_btn_mute_audio.setSelected(hasAudio);
         viewHolder.iv_btn_mute_video.setSelected(hasVideo);
@@ -82,6 +86,36 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
             viewHolder.iv_btn_mute_audio.setAlpha(0.5f);
             viewHolder.iv_btn_mute_video.setAlpha(0.5f);
         }
+    }
+
+    @NotNull
+    private String getRole(EduUserInfo userInfo) {
+        String role;
+        Map<String, Object> properties = userInfo.getUserProperties();
+        String key = UserProperty.role.class.getSimpleName();
+        String value = null;
+        if (properties.containsKey(key)) {
+            value = (String) properties.get(key);
+        }
+        if (value == null) {
+            value = UserProperty.role.AUDIENCE;
+        }
+        switch (value) {
+            case UserProperty.role.ADMIN:
+                role = "管理员";
+                break;
+            case UserProperty.role.HOST:
+                role = "主持人";
+                break;
+            case UserProperty.role.GUEST:
+                role = "嘉宾";
+                break;
+            case UserProperty.role.AUDIENCE:
+            default:
+                role = "观众";
+                break;
+        }
+        return role;
     }
 
 
@@ -105,5 +139,6 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         eduStreamInfos.clear();
         eduStreamInfos.addAll(covideoAudiences);
         setNewData(audiences);
+        notifyDataSetChanged();
     }
 }

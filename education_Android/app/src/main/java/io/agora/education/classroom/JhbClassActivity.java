@@ -53,6 +53,7 @@ import io.agora.education.classroom.bean.channel.Room;
 import io.agora.education.classroom.bean.msg.PeerMsg;
 import io.agora.education.classroom.fragment.UserListFragment;
 import io.agora.education.lx.LogUtil;
+import io.agora.education.lx.UserProperty;
 
 import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.Applying;
 import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.CoVideoing;
@@ -111,12 +112,13 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     protected void initData() {
         super.initData();
+        final boolean isAdmin = UserProperty.role.ADMIN.equals(roomEntry.getRole());
         joinRoom(getMainEduRoom(), roomEntry.getUserName(), roomEntry.getUserUuid(), true, false, true,
                 new EduCallback<EduStudent>() {
                     @Override
                     public void onSuccess(@org.jetbrains.annotations.Nullable EduStudent res) {
                         runOnUiThread(() -> showFragmentWithJoinSuccess());
-                        if (roomEntry.isAnchor()) { // 主播主动连麦
+                        if (isAdmin) { // 管理员主动连麦
                             onLinkMediaChanged(true);
                         }
                     }
@@ -125,7 +127,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                     public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
                         joinFailed(code, reason);
                     }
-                }, roomEntry.isAnchor());
+                }, isAdmin);
     }
 
     @Override
@@ -153,7 +155,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 .show(audienceListFragment)
                 .commitNow();
 
-        if (roomEntry.isAnchor()) {
+        if (UserProperty.role.ADMIN.equals(roomEntry.getRole())) {
             btn_layout_2.setVisibility(View.VISIBLE);
         } else {
             btn_layout_1.setVisibility(View.VISIBLE);
@@ -622,7 +624,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     private void refreshAudienceList() {
-        audienceListFragment.setUserList(getCurFullStream(), getCurFullUser());
+        runOnUiThread(() -> audienceListFragment.setUserList(getCurFullStream(), getCurFullUser()));
     }
 
     @OnClick(R.id.btn_hand_up)

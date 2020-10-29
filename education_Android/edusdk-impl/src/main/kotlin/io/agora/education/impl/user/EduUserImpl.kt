@@ -7,7 +7,6 @@ import android.widget.LinearLayout
 import com.google.gson.Gson
 import io.agora.Constants.Companion.APPID
 import io.agora.Constants.Companion.AgoraLog
-import io.agora.education.impl.util.Convert
 import io.agora.base.callback.ThrowableCallback
 import io.agora.base.network.BusinessException
 import io.agora.base.network.ResponseBody
@@ -33,10 +32,8 @@ import io.agora.education.impl.room.network.RoomService
 import io.agora.education.impl.stream.EduStreamInfoImpl
 import io.agora.education.impl.stream.network.StreamService
 import io.agora.education.impl.user.data.request.*
-import io.agora.education.impl.user.data.request.EduRoomChatMsgReq
-import io.agora.education.impl.user.data.request.EduRoomMsgReq
-import io.agora.education.impl.user.data.request.EduUserMsgReq
 import io.agora.education.impl.user.network.UserService
+import io.agora.education.impl.util.Convert
 import io.agora.rtc.Constants.CLIENT_ROLE_AUDIENCE
 import io.agora.rtc.Constants.CLIENT_ROLE_BROADCASTER
 import io.agora.rtc.RtcEngine
@@ -113,7 +110,7 @@ internal open class EduUserImpl(
         val eduStreamStatusReq = EduStreamStatusReq(streamInfo.streamName, streamInfo.videoSourceType.value,
                 AudioSourceType.MICROPHONE.value, if (streamInfo.hasVideo) 1 else 0,
                 if (streamInfo.hasAudio) 1 else 0)
-        AgoraLog.logMsg("$TAG->新建流: ${Gson().toJson(streamInfo)}", LogLevel.INFO.value)
+        AgoraLog.logMsg("$TAG->新建流: $streamInfo", LogLevel.INFO.value)
         RetrofitManager.instance()!!.getService(API_BASE_URL, StreamService::class.java)
                 .createStream(APPID, eduRoom.getRoomInfo().roomUuid, userInfo.userUuid,
                         streamInfo.streamUuid, eduStreamStatusReq)

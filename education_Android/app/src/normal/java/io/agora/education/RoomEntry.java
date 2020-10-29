@@ -3,6 +3,8 @@ package io.agora.education;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import io.agora.education.lx.UserProperty;
+
 /**
  * @author cjw
  */
@@ -12,15 +14,16 @@ public class RoomEntry implements Parcelable {
     private String roomName;
     private String roomUuid;
     private int roomType;
-    private int isAnchor;
+    private @UserProperty.role
+    String role;
 
-    public RoomEntry(String userName, String userUuid, String roomName, String roomUuid, int roomType, boolean isAnchor) {
+    public RoomEntry(String userName, String userUuid, String roomName, String roomUuid, int roomType, @UserProperty.role String role) {
         this.userName = userName;
         this.userUuid = userUuid;
         this.roomName = roomName;
         this.roomUuid = roomUuid;
         this.roomType = roomType;
-        this.isAnchor = isAnchor ? 1 : 0;
+        this.role = role;
     }
 
     public String getUserName() {
@@ -63,12 +66,13 @@ public class RoomEntry implements Parcelable {
         this.roomType = roomType;
     }
 
-    public boolean isAnchor() {
-        return isAnchor != 0;
+    public @UserProperty.role
+    String getRole() {
+        return role;
     }
 
-    public void setAnchor(boolean anchor) {
-        isAnchor = anchor ? 1 : 0;
+    public void setRole(@UserProperty.role String role) {
+        this.role = role;
     }
 
     @Override
@@ -83,7 +87,7 @@ public class RoomEntry implements Parcelable {
         dest.writeString(this.roomName);
         dest.writeString(this.roomUuid);
         dest.writeInt(this.roomType);
-        dest.writeInt(this.isAnchor);
+        dest.writeString(this.role.toString());
     }
 
     protected RoomEntry(Parcel in) {
@@ -92,7 +96,7 @@ public class RoomEntry implements Parcelable {
         this.roomName = in.readString();
         this.roomUuid = in.readString();
         this.roomType = in.readInt();
-        this.isAnchor = in.readInt();
+        this.role = in.readString();
     }
 
     public static final Creator<RoomEntry> CREATOR = new Creator<RoomEntry>() {
