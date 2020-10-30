@@ -75,6 +75,8 @@ import io.agora.education.lx.UserProperty;
 import io.agora.education.service.BoardService;
 import io.agora.education.service.bean.ResponseBody;
 import io.agora.education.widget.ConfirmDialog;
+import io.agora.rtm.ResultCallback;
+import io.agora.rtm.RtmChannelAttribute;
 import kotlin.Unit;
 
 import static io.agora.education.EduApplication.getAppId;
@@ -791,5 +793,14 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
         }
         boolean granted = whiteBoardIsGranted(boardState);
         whiteboardFragment.disableDeviceInputs(!granted);
+    }
+
+    void updateAttributes(List<RtmChannelAttribute> attributes, ResultCallback<Void> callback) {
+        getMainEduRoom().updateAttributes(attributes, callback);
+    }
+
+    @Override
+    public void onAttributesUpdated(@Nullable List<RtmChannelAttribute> p0) {
+
     }
 }

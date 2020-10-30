@@ -68,6 +68,7 @@ import io.agora.education.service.CommonService;
 import io.agora.education.service.bean.ResponseBody;
 import io.agora.education.service.bean.request.AllocateGroupReq;
 import io.agora.education.service.bean.response.EduRoomInfoRes;
+import io.agora.rtm.RtmChannelAttribute;
 
 import static io.agora.education.EduApplication.getAppId;
 import static io.agora.education.api.BuildConfig.API_BASE_URL;

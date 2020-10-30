@@ -15,12 +15,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.google.android.material.tabs.TabLayout;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,14 +47,18 @@ import io.agora.education.api.user.EduStudent;
 import io.agora.education.api.user.data.EduBaseUserInfo;
 import io.agora.education.api.user.data.EduUserEvent;
 import io.agora.education.api.user.data.EduUserInfo;
-import io.agora.education.api.user.data.EduUserRole;
 import io.agora.education.api.user.data.EduUserStateChangeType;
 import io.agora.education.classroom.adapter.ClassVideoAdapter;
 import io.agora.education.classroom.bean.channel.Room;
 import io.agora.education.classroom.bean.msg.PeerMsg;
 import io.agora.education.classroom.fragment.UserListFragment;
+import io.agora.education.classroom.widget.RtcVideoView;
+import io.agora.education.lx.LiveConfig;
 import io.agora.education.lx.LogUtil;
 import io.agora.education.lx.UserProperty;
+import io.agora.rtm.ErrorInfo;
+import io.agora.rtm.ResultCallback;
+import io.agora.rtm.RtmChannelAttribute;
 
 import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.Applying;
 import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.CoVideoing;
@@ -86,6 +91,12 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     View btn_layout_1;
     @BindView(R.id.btn_layout_2)
     View btn_layout_2;
+    @BindView(R.id.rl_videos2)
+    View rl_videos2;
+    @BindView(R.id.rvv_large)
+    RtcVideoView rvv_large;
+    @BindView(R.id.rvv_small)
+    RtcVideoView rvv_small;
 
 
     private AppCompatTextView textView_unRead;
@@ -610,16 +621,43 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     private void showVideoList(List<EduStreamInfo> list) {
         LogUtil.log("showVideoList", list);
         runOnUiThread(() -> {
-            for (int i = 0; i < list.size(); i++) {
-                EduStreamInfo streamInfo = list.get(i);
-                if (streamInfo.getPublisher().getRole().equals(EduUserRole.TEACHER)) {
-                    if (i != 0) {
-                        Collections.swap(list, 0, i);
+            for (EduStreamInfo info : list) {
+                renderStream(getMainEduRoom(), info, null);
+            }
+            List<EduStreamInfo> finalList = new ArrayList<>();
+            if (liveConfig.data != null) {
+                for (LiveConfig.DataBean bean : liveConfig.data) {
+                    for (EduStreamInfo info : list) {
+                        if (info.getStreamUuid().equals(bean.uid)) {
+                            finalList.add(info);
+                            break;
+                        }
                     }
-                    break;
                 }
             }
-            adapter.setNewList(list);
+            switch (liveConfig.cmd) {
+                case LiveConfig.CMD.CMD_1:
+                case LiveConfig.CMD.CMD_2:
+                    rv_videos.setVisibility(View.GONE);
+                    rl_videos2.setVisibility(View.VISIBLE);
+                    rvv_small.setViewVisibility(LiveConfig.CMD.CMD_1.equals(liveConfig.cmd) ? View.GONE : View.VISIBLE);
+                    adapter.setNewList(new ArrayList<>());
+                    for (int i = 0; i < list.size(); i++) {
+                        EduStreamInfo info = list.get(i);
+                        if (i == 0) {
+                            renderStream(getMainEduRoom(), info, rvv_large);
+                        } else if (i == 1 && LiveConfig.CMD.CMD_2.equals(liveConfig.cmd)) {
+                            renderStream(getMainEduRoom(), info, rvv_small);
+                        }
+                    }
+                    break;
+                case LiveConfig.CMD.CMD_3:
+                default:
+                    rv_videos.setVisibility(View.VISIBLE);
+                    rl_videos2.setVisibility(View.GONE);
+                    adapter.setNewList(list);
+                    break;
+            }
         });
     }
 
@@ -729,5 +767,64 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 userInfo.getUserName());
         PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
         getLocalUser().sendUserMessage(peerMsg.toJsonString(), userInfo, callback);
+    }
+
+    @OnClick(R.id.btn_video_layout_1)
+    void videoLayout1() {
+        ArrayList<LiveConfig.DataBean> data = new ArrayList<>();
+        for (EduStreamInfo info : getCurFullStream()) {
+            data.add(new LiveConfig.DataBean(info.getStreamUuid()));
+        }
+        setChannelVideoLayout(new LiveConfig(LiveConfig.CMD.CMD_1, data));
+    }
+
+    @OnClick(R.id.btn_video_layout_2)
+    void videoLayout2() {
+        ArrayList<LiveConfig.DataBean> data = new ArrayList<>();
+        for (EduStreamInfo info : getCurFullStream()) {
+            data.add(new LiveConfig.DataBean(info.getStreamUuid()));
+        }
+        setChannelVideoLayout(new LiveConfig(LiveConfig.CMD.CMD_2, data));
+    }
+
+    @OnClick(R.id.btn_video_layout_3)
+    void videoLayout3() {
+        ArrayList<LiveConfig.DataBean> data = new ArrayList<>();
+        for (EduStreamInfo info : getCurFullStream()) {
+            data.add(new LiveConfig.DataBean(info.getStreamUuid()));
+        }
+        setChannelVideoLayout(new LiveConfig(LiveConfig.CMD.CMD_3, data));
+    }
+
+    private void setChannelVideoLayout(LiveConfig liveConfig) {
+        ArrayList<RtmChannelAttribute> attributes = new ArrayList<>();
+        attributes.add(new RtmChannelAttribute(LiveConfig.KEY, GsonUtils.toJson(liveConfig)));
+        updateAttributes(attributes, new ResultCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                ToastUtils.showShort("设置成功");
+            }
+
+            @Override
+            public void onFailure(ErrorInfo errorInfo) {
+                ToastUtils.showShort(errorInfo.toString());
+            }
+        });
+    }
+
+    LiveConfig liveConfig = new LiveConfig();
+
+    @Override
+    public void onAttributesUpdated(@Nullable List<RtmChannelAttribute> p0) {
+        super.onAttributesUpdated(p0);
+        runOnUiThread(() -> {
+            for (RtmChannelAttribute attribute : p0) {
+                if (LiveConfig.KEY.equals(attribute.getKey())) {
+                    liveConfig = GsonUtils.fromJson(attribute.getValue(), LiveConfig.class);
+                    break;
+                }
+            }
+            refreshVideoList();
+        });
     }
 }

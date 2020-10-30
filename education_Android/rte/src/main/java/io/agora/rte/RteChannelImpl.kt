@@ -21,7 +21,8 @@ internal class RteChannelImpl(
     internal var statisticsReportListener: RteStatisticsReportListener? = null
     private val rtmChannelListener = object : RtmChannelListener {
         override fun onAttributesUpdated(p0: MutableList<RtmChannelAttribute>?) {
-
+            Log.e(TAG, "接收到频道属性变化->${p0}")
+            eventListener?.onAttributesUpdated(p0)
         }
 
         /**收到频道内消息(包括频道内的群聊消息和各种房间配置、人员信息、流信息等)*/
@@ -159,5 +160,9 @@ internal class RteChannelImpl(
     override fun release() {
         rtmChannel.release()
         rtcChannel.destroy()
+    }
+
+    override fun updateAttributes(attributes: MutableList<RtmChannelAttribute>, callback: ResultCallback<Void>) {
+        RteEngineImpl.rtmClient.addOrUpdateChannelAttributes(rtmChannel.id, attributes, ChannelAttributeOptions(true), callback)
     }
 }

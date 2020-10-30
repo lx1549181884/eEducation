@@ -1,5 +1,6 @@
 package io.agora.education.api.room
 
+import androidx.annotation.NonNull
 import io.agora.education.api.EduCallback
 import io.agora.education.api.board.EduBoard
 import io.agora.education.api.record.EduRecord
@@ -9,9 +10,10 @@ import io.agora.education.api.room.data.RoomJoinOptions
 import io.agora.education.api.room.listener.EduRoomEventListener
 import io.agora.education.api.stream.data.EduStreamInfo
 import io.agora.education.api.user.EduStudent
-import io.agora.education.api.user.EduTeacher
 import io.agora.education.api.user.EduUser
 import io.agora.education.api.user.data.EduUserInfo
+import io.agora.rtm.ResultCallback
+import io.agora.rtm.RtmChannelAttribute
 
 abstract class EduRoom(roomInfo: EduRoomInfo, roomStatus: EduRoomStatus) {
 
@@ -53,6 +55,8 @@ abstract class EduRoom(roomInfo: EduRoomInfo, roomStatus: EduRoomStatus) {
     abstract fun clearData()
 
     abstract fun leave()
+
+    abstract fun updateAttributes(attributes: MutableList<RtmChannelAttribute>, @NonNull callback: ResultCallback<Void>)
 
     override fun equals(other: Any?): Boolean {
         if (other == null) {

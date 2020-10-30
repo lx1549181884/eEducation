@@ -46,10 +46,7 @@ import io.agora.rtc.Constants.CLIENT_ROLE_BROADCASTER
 import io.agora.rtc.models.ChannelMediaOptions
 import io.agora.rte.RteEngineImpl
 import io.agora.rte.listener.RteChannelEventListener
-import io.agora.rtm.ErrorInfo
-import io.agora.rtm.ResultCallback
-import io.agora.rtm.RtmChannelMember
-import io.agora.rtm.RtmMessage
+import io.agora.rtm.*
 import kotlin.math.max
 
 internal class EduRoomImpl(
@@ -445,4 +442,13 @@ internal class EduRoomImpl(
         val quality: NetworkQuality = Convert.convertNetworkQuality(value)
         eventListener?.onNetworkQualityChanged(quality, getLocalUser().userInfo, this)
     }
+
+    override fun updateAttributes(attributes: MutableList<RtmChannelAttribute>, callback: ResultCallback<Void>) {
+        RteEngineImpl[getRoomInfo().roomUuid]?.updateAttributes(attributes, callback)
+    }
+
+    override fun onAttributesUpdated(p0: MutableList<RtmChannelAttribute>?) {
+        eventListener?.onAttributesUpdated(p0)
+    }
+
 }

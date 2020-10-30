@@ -18,6 +18,7 @@
         android:id="@+id/ll_videos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/title_view">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -25,6 +26,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none" />
+
+        <RelativeLayout
+            android:id="@+id/rl_videos2"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_230"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <io.agora.education.classroom.widget.RtcVideoView
+                android:id="@+id/rvv_large"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <io.agora.education.classroom.widget.RtcVideoView
+                android:id="@+id/rvv_small"
+                android:layout_width="@dimen/dp_150"
+                android:layout_height="@dimen/dp_100"
+                android:layout_alignParentRight="true" />
+        </RelativeLayout>
     </LinearLayout>
 
     <com.google.android.material.tabs.TabLayout
@@ -99,21 +119,53 @@
             android:id="@+id/btn_layout_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:visibility="gone">
 
-            <Button
-                android:id="@+id/btn_reject"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="拒绝" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <Button
-                android:id="@+id/btn_accept"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="同意" />
+                <Button
+                    android:id="@+id/btn_reject"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="拒绝" />
+
+                <Button
+                    android:id="@+id/btn_accept"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="同意" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/btn_video_layout_1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="视频布局1" />
+
+                <Button
+                    android:id="@+id/btn_video_layout_2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="视频布局2" />
+
+                <Button
+                    android:id="@+id/btn_video_layout_3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="视频布局3" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

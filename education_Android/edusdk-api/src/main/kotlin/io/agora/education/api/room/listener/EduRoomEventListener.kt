@@ -12,6 +12,7 @@ import io.agora.education.api.stream.data.EduStreamStateChangeType
 import io.agora.education.api.user.data.EduUserEvent
 import io.agora.education.api.user.data.EduUserInfo
 import io.agora.education.api.user.data.EduUserStateChangeType
+import io.agora.rtm.RtmChannelAttribute
 
 interface EduRoomEventListener {
 
@@ -48,4 +49,6 @@ interface EduRoomEventListener {
     fun onNetworkQualityChanged(quality: NetworkQuality, user: EduUserInfo, classRoom: EduRoom)
 
     fun onConnectionStateChanged(state: ConnectionState, classRoom: EduRoom)
+
+    fun onAttributesUpdated(p0: MutableList<RtmChannelAttribute>?)
 }
