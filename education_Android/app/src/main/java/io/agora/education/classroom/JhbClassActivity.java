@@ -22,7 +22,9 @@ import com.google.android.material.tabs.TabLayout;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,7 +47,9 @@ import io.agora.education.api.stream.data.EduStreamStateChangeType;
 import io.agora.education.api.stream.data.LocalStreamInitOptions;
 import io.agora.education.api.stream.data.VideoSourceType;
 import io.agora.education.api.user.EduStudent;
+import io.agora.education.api.user.EduUser;
 import io.agora.education.api.user.data.EduBaseUserInfo;
+import io.agora.education.api.user.data.EduLocalUserInfo;
 import io.agora.education.api.user.data.EduUserEvent;
 import io.agora.education.api.user.data.EduUserInfo;
 import io.agora.education.api.user.data.EduUserStateChangeType;
@@ -205,67 +209,31 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         recoveryFragmentWithConfigChanged();
     }
 
-    @OnClick(R.id.layout_hand_up)
-    public void onClick(View view) {
-        boolean status = localCoVideoStatus == DisCoVideo;
-        if (!status) {
-            /*取消举手(包括在老师处理前主动取消和老师同意后主动退出)*/
-            cancelCoVideo(new EduCallback<EduMsg>() {
-                @Override
-                public void onSuccess(@Nullable EduMsg res) {
-                    Log.e(TAG, "取消举手成功");
-                }
-
-                @Override
-                public void onFailure(int code, @Nullable String reason) {
-                    Log.e(TAG, "取消举手失败");
-                }
-            });
-        } else {
-            /*举手*/
-            applyCoVideo(new EduCallback<EduMsg>() {
-                @Override
-                public void onSuccess(@Nullable EduMsg res) {
-                    Log.e(TAG, "举手成功");
-                }
-
-                @Override
-                public void onFailure(int code, @Nullable String reason) {
-                    Log.e(TAG, "举手失败");
-                    ToastManager.showShort(R.string.function_error, code, reason);
-                }
-            });
-        }
-    }
-
     /**
      * 申请举手连麦
      */
-    private void applyCoVideo(EduCallback<EduMsg> callback) {
-        PeerMsg.CoVideoMsg coVideoMsg = new PeerMsg.CoVideoMsg(
-                PeerMsg.CoVideoMsg.Type.APPLY,
-                getLocalUser().getUserInfo().getUserUuid(),
-                getLocalUser().getUserInfo().getUserName());
-        PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
-        EduUserInfo teacher = getTeacher();
-        if (teacher != null) {
-            localCoVideoStatus = Applying;
-            resetHandState();
-            getLocalUser().sendUserMessage(peerMsg.toJsonString(), getTeacher(), callback);
-        } else {
-            ToastManager.showShort(R.string.there_is_no_teacher_disable_covideo);
-        }
+    private void applyCoVideo() {
+        EduUser localUser = getLocalUser();
+        Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.handUp.class.getSimpleName(), UserProperty.handUp.TRUE);
+        localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback() {
+            @Override
+            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                localCoVideoStatus = Applying;
+                resetHandState();
+                ToastUtils.showShort("成功");
+            }
+
+            @Override
+            public void onFailure(int code, @Nullable String reason) {
+                ToastUtils.showShort(code + " " + reason);
+            }
+        });
     }
 
     /**
      * 取消举手(包括在老师处理前主动取消和老师同意后主动退出)
      */
-    private void cancelCoVideo(EduCallback<EduMsg> callback) {
-        PeerMsg.CoVideoMsg coVideoMsg = new PeerMsg.CoVideoMsg(
-                (localCoVideoStatus == CoVideoing) ? EXIT : CANCEL,
-                getLocalUser().getUserInfo().getUserUuid(),
-                getLocalUser().getUserInfo().getUserName());
-        PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
+    private void cancelCoVideo(EduCallback callback) {
         if (localCoVideoStatus == CoVideoing) {
             /*连麦过程中取消
              * 1：关闭本地流
@@ -282,6 +250,9 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                         localCoVideoStatus = DisCoVideo;
                         curLinkedUser = null;
                         resetHandState();
+                        EduLocalUserInfo userInfo = getLocalUser().getUserInfo();
+                        PeerMsg.CoVideoMsg coVideoMsg = new PeerMsg.CoVideoMsg(EXIT, userInfo.getUserUuid(), userInfo.getUserName());
+                        PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
                         getLocalUser().sendUserMessage(peerMsg.toJsonString(), getTeacher(), callback);
                         getLocalUser().unPublishStream(res, new EduCallback<Boolean>() {
                             @Override
@@ -303,11 +274,21 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 });
             }
         } else {
-            /*举手过程中取消(老师还未处理)；直接发送取消的点对点消息给老师即可*/
-            getLocalUser().sendUserMessage(peerMsg.toJsonString(), getTeacher(), callback);
-            localCoVideoStatus = DisCoVideo;
-            runOnUiThread(() -> {
-                resetHandState();
+            /*举手过程中取消(老师还未处理)*/
+            EduUser localUser = getLocalUser();
+            Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.handUp.class.getSimpleName(), UserProperty.handUp.FALSE);
+            localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
+                @Override
+                public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
+                    localCoVideoStatus = DisCoVideo;
+                    resetHandState();
+                    ToastUtils.showShort("成功");
+                }
+
+                @Override
+                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                    ToastUtils.showShort(code + " " + reason);
+                }
             });
         }
     }
@@ -534,6 +515,16 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     public void onRemoteUserPropertyUpdated(@NotNull EduUserInfo userInfos, @NotNull EduRoom classRoom,
                                             @Nullable Map<String, Object> cause) {
+        super.onRemoteUserPropertyUpdated(userInfos, classRoom, cause);
+        if (Boolean.parseBoolean(UserProperty.get(userInfos, UserProperty.handUp.class))) {
+            handUpUserId = userInfos.getUserUuid();
+        } else {
+            if (handUpUserId == userInfos.getUserUuid()) {
+                handUpUserId = null;
+            }
+        }
+        refreshVideoList();
+        refreshAudienceList();
     }
 
     @Override
@@ -559,6 +550,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     public void onLocalUserPropertyUpdated(@NotNull EduUserInfo userInfo, @Nullable Map<String, Object> cause) {
         super.onLocalUserPropertyUpdated(userInfo, cause);
+        refreshVideoList();
+        refreshAudienceList();
     }
 
     @Override
@@ -691,18 +684,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             }
         }
         /*举手*/
-        applyCoVideo(new EduCallback<EduMsg>() {
-            @Override
-            public void onSuccess(@Nullable EduMsg res) {
-                Log.e(TAG, "举手成功");
-            }
-
-            @Override
-            public void onFailure(int code, @Nullable String reason) {
-                Log.e(TAG, "举手失败");
-                ToastManager.showShort(R.string.function_error, code, reason);
-            }
-        });
+        applyCoVideo();
     }
 
     @OnClick(R.id.btn_hand_down)
@@ -711,12 +693,12 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         cancelCoVideo(new EduCallback<EduMsg>() {
             @Override
             public void onSuccess(@Nullable EduMsg res) {
-                Log.e(TAG, "取消举手成功");
+                ToastUtils.showShort("成功");
             }
 
             @Override
             public void onFailure(int code, @Nullable String reason) {
-                Log.e(TAG, "取消举手失败");
+                ToastUtils.showShort(code + " " + reason);
             }
         });
     }

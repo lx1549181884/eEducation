@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -90,17 +89,17 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         }
 
         viewHolder.btn_mute_chat.setText(userInfo.isChatAllowed() ? "禁言" : "取消禁言");
+        viewHolder.iv_btn_hand_up.setVisibility(getHandUp(userInfo) ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean getHandUp(EduUserInfo userInfo) {
+        return Boolean.parseBoolean(UserProperty.get(userInfo, UserProperty.handUp.class));
     }
 
     @NotNull
     private String getRole(EduUserInfo userInfo) {
         String role;
-        Map<String, Object> properties = userInfo.getUserProperties();
-        String key = UserProperty.role.class.getSimpleName();
-        String value = null;
-        if (properties.containsKey(key)) {
-            value = (String) properties.get(key);
-        }
+        String value = UserProperty.get(userInfo, UserProperty.role.class);
         if (value == null) {
             value = UserProperty.role.AUDIENCE;
         }
@@ -134,6 +133,8 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         ImageView iv_btn_mute_video;
         @BindView(R.id.btn_mute_chat)
         Button btn_mute_chat;
+        @BindView(R.id.iv_btn_hand_up)
+        ImageView iv_btn_hand_up;
 
         ViewHolder(View itemView) {
             super(itemView);
