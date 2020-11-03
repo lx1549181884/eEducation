@@ -7,7 +7,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -121,7 +120,7 @@ public class WhiteBoardFragment extends BaseFragment implements RadioGroup.OnChe
                     runOnUiThread(() -> pb_loading.setVisibility(View.VISIBLE));
                     RoomParams params = new RoomParams(uuid, boardToken);
                     params.setCameraBound(new CameraBound(miniScale, maxScale));
-                    boardManager.init(whiteSdk, params);
+//                    boardManager.init(whiteSdk, params);
                 }
             }
 

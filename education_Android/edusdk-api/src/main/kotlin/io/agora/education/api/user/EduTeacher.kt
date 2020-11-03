@@ -14,10 +14,6 @@ interface EduTeacher : EduUser {
 
     fun endClass(callback: EduCallback<Unit>)
 
-    fun allowStudentChat(isAllow: Boolean, callback: EduCallback<Unit>)
-
-    fun allowRemoteStudentChat(isAllow: Boolean, remoteStudent: EduUserInfo, callback: EduCallback<Unit>)
-
     fun startShareScreen(options: ScreenStreamInitOptions, callback: EduCallback<EduStreamInfo>)
 
     fun stopShareScreen(callback: EduCallback<Unit>)

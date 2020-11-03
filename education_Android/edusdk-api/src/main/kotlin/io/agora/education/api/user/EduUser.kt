@@ -62,4 +62,8 @@ interface EduUser {
 
     fun setUserProperty(property: MutableMap.MutableEntry<String, String>,
                         cause: MutableMap<String, String>, targetUser: EduUserInfo, callback: EduCallback<Unit>)
+
+    fun allowStudentChat(isAllow: Boolean, callback: EduCallback<Unit>)
+
+    fun allowRemoteStudentChat(isAllow: Boolean, remoteStudent: EduUserInfo, callback: EduCallback<Unit>)
 }

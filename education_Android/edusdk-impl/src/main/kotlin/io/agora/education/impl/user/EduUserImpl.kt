@@ -17,6 +17,7 @@ import io.agora.education.api.message.EduChatMsg
 import io.agora.education.api.message.EduChatMsgType
 import io.agora.education.api.message.EduMsg
 import io.agora.education.api.room.data.EduError
+import io.agora.education.api.room.data.EduMuteState
 import io.agora.education.api.statistics.AgoraError
 import io.agora.education.api.stream.data.*
 import io.agora.education.api.user.EduUser
@@ -405,6 +406,45 @@ internal open class EduUserImpl(
         RetrofitManager.instance()!!.getService(API_BASE_URL, UserService::class.java)
                 .addProperty(APPID, eduRoom.getRoomInfo().roomUuid, targetUser.userUuid, property.key,
                         req)
+                .enqueue(RetrofitManager.Callback(0, object : ThrowableCallback<ResponseBody<String>> {
+                    override fun onSuccess(res: ResponseBody<String>?) {
+                        callback.onSuccess(Unit)
+                    }
+
+                    override fun onFailure(throwable: Throwable?) {
+                        var error = throwable as? BusinessException
+                        callback.onFailure(error?.code ?: AgoraError.INTERNAL_ERROR.value,
+                                error?.message ?: throwable?.message)
+                    }
+                }))
+    }
+
+    override fun allowStudentChat(isAllow: Boolean, callback: EduCallback<Unit>) {
+        val chatState = if (isAllow) EduMuteState.Enable else EduMuteState.Disable
+        val eduRoomStatusReq = EduRoomMuteStateReq(
+                RoleMuteConfig(null, chatState.value.toString(), chatState.value.toString()),
+                null, null)
+        RetrofitManager.instance()!!.getService(API_BASE_URL, RoomService::class.java)
+                .updateClassroomMuteState(APPID, eduRoom.getRoomInfo().roomUuid, eduRoomStatusReq)
+                .enqueue(RetrofitManager.Callback(0, object : ThrowableCallback<ResponseBody<String>> {
+                    override fun onSuccess(res: ResponseBody<String>?) {
+                        callback.onSuccess(Unit)
+                    }
+
+                    override fun onFailure(throwable: Throwable?) {
+                        var error = throwable as? BusinessException
+                        callback.onFailure(error?.code ?: AgoraError.INTERNAL_ERROR.value,
+                                error?.message ?: throwable?.message)
+                    }
+                }))
+    }
+
+    override fun allowRemoteStudentChat(isAllow: Boolean, remoteStudent: EduUserInfo, callback: EduCallback<Unit>) {
+        /***/
+        val role = Convert.convertUserRole(remoteStudent.role, eduRoom.getCurRoomType(), eduRoom.curClassType)
+        val eduUserStatusReq = EduUserStatusReq(remoteStudent.userName, if (isAllow) 0 else 1, role)
+        RetrofitManager.instance()!!.getService(API_BASE_URL, UserService::class.java)
+                .updateUserMuteState(APPID, eduRoom.getRoomInfo().roomUuid, remoteStudent.userUuid, eduUserStatusReq)
                 .enqueue(RetrofitManager.Callback(0, object : ThrowableCallback<ResponseBody<String>> {
                     override fun onSuccess(res: ResponseBody<String>?) {
                         callback.onSuccess(Unit)

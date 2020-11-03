@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.blankj.utilcode.util.ToastUtils;
 import com.google.gson.Gson;
 import com.herewhite.sdk.domain.GlobalState;
 
@@ -496,6 +497,7 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
         EduRoomStatus roomStatus = getMyMediaRoom().getRoomStatus();
         title_view.setTimeState(roomStatus.getCourseState() == EduRoomState.START,
                 System.currentTimeMillis() - roomStatus.getStartTime());
+        onRoomStatusChanged(EduRoomChangeType.AllStudentsChat, getLocalUserInfo(), classRoom, false);
         chatRoomFragment.setMuteAll(!roomStatus.isStudentChatAllowed());
         /**处理roomProperties*/
         Map<String, Object> roomProperties = classRoom.getRoomProperties();
@@ -619,6 +621,11 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
 
     @Override
     public void onRoomStatusChanged(@NotNull EduRoomChangeType event, @NotNull EduUserInfo operatorUser, @NotNull EduRoom classRoom) {
+        onRoomStatusChanged(event, operatorUser, classRoom, true);
+    }
+
+
+    public void onRoomStatusChanged(@NotNull EduRoomChangeType event, @NotNull EduUserInfo operatorUser, @NotNull EduRoom classRoom, boolean showToast) {
         EduRoomStatus roomStatus = classRoom.getRoomStatus();
         switch (event) {
             case CourseState:
@@ -626,11 +633,21 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
                         System.currentTimeMillis() - roomStatus.getStartTime());
                 break;
             case AllStudentsChat:
-                chatRoomFragment.setMuteAll(!roomStatus.isStudentChatAllowed());
+                boolean muteAll = !classRoom.getRoomStatus().isStudentChatAllowed();
+                boolean muteSelf = !getLocalUserInfo().isChatAllowed();
+                onMuteChanged(muteAll, muteSelf);
+                if (showToast) {
+                    ToastUtils.showShort(muteAll ? "全体禁言" : "取消全体禁言");
+                }
                 break;
             default:
                 break;
         }
+
+    }
+
+    public void onMuteChanged(boolean muteAll, boolean muteSelf) {
+        chatRoomFragment.setMuteAll(muteAll || muteSelf);
     }
 
     @Override
@@ -692,9 +709,18 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
 
     @Override
     public void onLocalUserUpdated(@NotNull EduUserEvent userEvent, @NotNull EduUserStateChangeType type) {
+        LogUtil.log("onLocalUserUpdated", userEvent, type);
         /**更新用户信息*/
-        EduUserInfo userInfo = userEvent.getModifiedUser();
-        chatRoomFragment.setMuteLocal(!userInfo.isChatAllowed());
+        switch (type) {
+            case Chat:
+                boolean muteAll = !getMainEduRoom().getRoomStatus().isStudentChatAllowed();
+                boolean muteSelf = !userEvent.getModifiedUser().isChatAllowed();
+                onMuteChanged(muteAll, muteSelf);
+                ToastUtils.showShort(muteSelf ? "个人禁言中！" : "取消个人禁言");
+                break;
+            default:
+                break;
+        }
     }
 
     @Override

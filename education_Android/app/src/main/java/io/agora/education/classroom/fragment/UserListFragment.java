@@ -6,8 +6,11 @@ import android.view.View;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blankj.utilcode.util.ToastUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemChildClickListener;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +18,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import io.agora.education.R;
+import io.agora.education.api.EduCallback;
 import io.agora.education.api.stream.data.EduStreamInfo;
 import io.agora.education.api.stream.data.VideoSourceType;
 import io.agora.education.api.user.data.EduBaseUserInfo;
@@ -23,6 +27,7 @@ import io.agora.education.api.user.data.EduUserRole;
 import io.agora.education.base.BaseFragment;
 import io.agora.education.classroom.BaseClassActivity;
 import io.agora.education.classroom.adapter.UserListAdapter;
+import kotlin.Unit;
 
 public class UserListFragment extends BaseFragment implements OnItemChildClickListener {
 
@@ -116,6 +121,20 @@ public class UserListFragment extends BaseFragment implements OnItemChildClickLi
                     break;
                 case R.id.iv_btn_mute_video:
                     ((BaseClassActivity) context).muteLocalVideo(isSelected);
+                    break;
+                case R.id.btn_mute_chat:
+                    EduUserInfo item = (EduUserInfo) adapter.getItem(position);
+                    ((BaseClassActivity) context).getLocalUser().allowRemoteStudentChat(isSelected, item, new EduCallback<Unit>() {
+                        @Override
+                        public void onSuccess(@Nullable Unit res) {
+                            ToastUtils.showShort("成功");
+                        }
+
+                        @Override
+                        public void onFailure(int code, @Nullable String reason) {
+                            ToastUtils.showShort(code + " " + reason);
+                        }
+                    });
                     break;
                 default:
                     break;

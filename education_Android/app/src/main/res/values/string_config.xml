@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-<string name="agora_app_id" translatable="false">2c3e8f9b46024a14a5290396cbfc1728</string>
-
+    <string name="agora_app_id" translatable="false">2c3e8f9b46024a14a5290396cbfc1728</string>
     <string name="agora_customer_id" translatable="false">275768b9444d42dfa0befa4480c97900</string>
     <string name="agora_customer_cer" translatable="false">57bb41c658fe4a73a85e0bb459789e17</string>
-
-    <string name="whiteboard_app_id" translatable="false">NETLESSSDK_YWs9YkVRNS1lZHhEWVpfNUc2ViZub25jZT0xNjAwNzU4ODg3MDE2MDAmcm9sZT0wJnNpZz1jMjA4YTk3N2QyZDI5ZTQ2Y2U0ZGZiOTJkYzJjZWE1NDZkMmQ3M2JiNjA4NWRiYmYzYjM5NmEwOTNlNGMyNTYx</string>
-
+    <string name="whiteboard_app_id" translatable="false">B0W4oPyjEeqMwmsIx83bkQ/WR-6NMVfTvWgmw</string>
 </resources>

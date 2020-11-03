@@ -1,6 +1,7 @@
 package io.agora.education.classroom.adapter;
 
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -61,7 +62,7 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
 
     public UserListAdapter() {
         super(R.layout.item_user_list);
-        addChildClickViewIds(R.id.iv_btn_mute_audio, R.id.iv_btn_mute_video);
+        addChildClickViewIds(R.id.iv_btn_mute_audio, R.id.iv_btn_mute_video, R.id.btn_mute_chat);
     }
 
     @Override
@@ -75,10 +76,11 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
                 break;
             }
         }
-        viewHolder.tv_name.setText(getRole(userInfo) + " " + userInfo.getUserName());
+        viewHolder.tv_name.setText(getRole(userInfo) + "\n" + userInfo.getUserName());
         viewHolder.iv_btn_grant_board.setSelected(grantedUuids.contains(userInfo.getUserUuid()));
         viewHolder.iv_btn_mute_audio.setSelected(hasAudio);
         viewHolder.iv_btn_mute_video.setSelected(hasVideo);
+        viewHolder.btn_mute_chat.setSelected(!userInfo.isChatAllowed());
         boolean isLocal = userInfo.getUserUuid().equals(localUserUuid);
         viewHolder.iv_btn_mute_audio.setEnabled(isLocal);
         viewHolder.iv_btn_mute_video.setEnabled(isLocal);
@@ -86,6 +88,8 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
             viewHolder.iv_btn_mute_audio.setAlpha(0.5f);
             viewHolder.iv_btn_mute_video.setAlpha(0.5f);
         }
+
+        viewHolder.btn_mute_chat.setText(userInfo.isChatAllowed() ? "禁言" : "取消禁言");
     }
 
     @NotNull
@@ -128,6 +132,8 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         ImageView iv_btn_mute_audio;
         @BindView(R.id.iv_btn_mute_video)
         ImageView iv_btn_mute_video;
+        @BindView(R.id.btn_mute_chat)
+        Button btn_mute_chat;
 
         ViewHolder(View itemView) {
             super(itemView);

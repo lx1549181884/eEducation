@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -59,6 +60,7 @@ import io.agora.education.lx.UserProperty;
 import io.agora.rtm.ErrorInfo;
 import io.agora.rtm.ResultCallback;
 import io.agora.rtm.RtmChannelAttribute;
+import kotlin.Unit;
 
 import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.Applying;
 import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.CoVideoing;
@@ -97,6 +99,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     RtcVideoView rvv_large;
     @BindView(R.id.rvv_small)
     RtcVideoView rvv_small;
+    @BindView(R.id.btn_mute_chat_all)
+    Button btn_mute_chat_all;
 
 
     private AppCompatTextView textView_unRead;
@@ -458,6 +462,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     public void onRemoteUserUpdated(@NotNull EduUserEvent userEvent, @NotNull EduUserStateChangeType type,
                                     @NotNull EduRoom classRoom) {
         super.onRemoteUserUpdated(userEvent, type, classRoom);
+        refreshVideoList();
+        refreshAudienceList();
     }
 
     @Override
@@ -504,6 +510,13 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     public void onRoomStatusChanged(@NotNull EduRoomChangeType event, @NotNull EduUserInfo operatorUser, @NotNull EduRoom classRoom) {
         super.onRoomStatusChanged(event, operatorUser, classRoom);
+    }
+
+    @Override
+    public void onMuteChanged(boolean muteAll, boolean muteSelf) {
+        super.onMuteChanged(muteAll, muteSelf);
+        btn_mute_chat_all.setSelected(muteAll);
+        btn_mute_chat_all.setText(muteAll ? "取消全体禁言" : "全体禁言");
     }
 
     @Override
@@ -667,6 +680,16 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
 
     @OnClick(R.id.btn_hand_up)
     void handUp() {
+        if (!getMainEduRoom().getRoomStatus().isStudentChatAllowed()) {
+            ToastUtils.showShort("全体禁言中！");
+            return;
+        } else {
+            EduUserInfo localUserInfo = getLocalUserInfo();
+            if (!localUserInfo.isChatAllowed()) {
+                ToastUtils.showShort("个人禁言中！");
+                return;
+            }
+        }
         /*举手*/
         applyCoVideo(new EduCallback<EduMsg>() {
             @Override
@@ -825,6 +848,22 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 }
             }
             refreshVideoList();
+        });
+    }
+
+    @OnClick(R.id.btn_mute_chat_all)
+    void muteChatAll() {
+        boolean allow = !btn_mute_chat_all.isSelected();
+        getLocalUser().allowStudentChat(!allow, new EduCallback<Unit>() {
+            @Override
+            public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
+                ToastUtils.showShort("成功");
+            }
+
+            @Override
+            public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                ToastUtils.showShort(code + " " + reason);
+            }
         });
     }
 }
