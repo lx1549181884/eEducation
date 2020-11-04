@@ -108,6 +108,7 @@ public class MainActivity extends BaseActivity {
         new PolicyDialog().show(getSupportFragmentManager(), null);
         if (BuildConfig.DEBUG) {
             et_room_name.setText(Pattern.compile("[\\D]").matcher(TimeUtils.getNowString().split(" ")[0]).replaceAll("").trim());
+            et_room_name.setText("20202003");
             et_room_name.setSelection(et_room_name.length());
             et_your_name.setText(Build.MODEL);
         }
@@ -254,7 +255,7 @@ public class MainActivity extends BaseActivity {
         /**userUuid和roomUuid需用户自己指定，并保证唯一性*/
         int roomType = getClassType(roomTypeStr);
         String userUuid = yourNameStr + EduUserRole.STUDENT.getValue();
-        String roomUuid = roomNameStr + roomType;
+        String roomUuid = roomNameStr;
 
         EduManagerOptions options = new EduManagerOptions(this, getAppId(), userUuid, yourNameStr);
         options.setCustomerId(getCustomerId());
@@ -279,21 +280,21 @@ public class MainActivity extends BaseActivity {
     }
 
     @NotNull
-    private String getRole() {
-        String role;
+    private int getRole() {
+        int role;
         switch (rg_role.getCheckedRadioButtonId()) {
             case R.id.rb_admin:
-                role = UserProperty.role.ADMIN;
+                role = UserProperty.jhbRole.ADMIN;
                 break;
             case R.id.rb_host:
-                role = UserProperty.role.HOST;
+                role = UserProperty.jhbRole.HOST;
                 break;
             case R.id.rb_guest:
-                role = UserProperty.role.GUEST;
+                role = UserProperty.jhbRole.GUEST;
                 break;
             case R.id.rb_audience:
             default:
-                role = UserProperty.role.AUDIENCE;
+                role = UserProperty.jhbRole.AUDIENCE;
         }
         return role;
     }
@@ -311,7 +312,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void createRoom(String yourNameStr, String yourUuid, String roomNameStr, String roomUuid, int roomType, @UserProperty.role String role) {
+    private void createRoom(String yourNameStr, String yourUuid, String roomNameStr, String roomUuid, int roomType, @UserProperty.jhbRole int role) {
         /**createClassroom时，room不存在则新建，存在则返回room信息(此接口非必须调用)，
          * 只要保证在调用joinClassroom之前，classroom在服务端存在即可*/
         RoomCreateOptions options = new RoomCreateOptions(roomUuid, roomNameStr, roomType);
@@ -348,7 +349,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private Intent createIntent(String yourNameStr, String yourUuid, String roomNameStr,
-                                String roomUuid, @Room.Type int roomType, @UserProperty.role String role) {
+                                String roomUuid, @Room.Type int roomType, @UserProperty.jhbRole int role) {
         RoomEntry roomEntry = new RoomEntry(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType, role);
 
         Intent intent = new Intent();

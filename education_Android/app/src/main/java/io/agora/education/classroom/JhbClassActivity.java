@@ -131,7 +131,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     protected void initData() {
         super.initData();
-        final boolean isAdmin = UserProperty.role.ADMIN.equals(roomEntry.getRole());
+        final boolean isAdmin = UserProperty.jhbRole.ADMIN == roomEntry.getRole();
         joinRoom(getMainEduRoom(), roomEntry.getUserName(), roomEntry.getUserUuid(), true, false, true,
                 new EduCallback<EduStudent>() {
                     @Override
@@ -174,7 +174,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 .show(audienceListFragment)
                 .commitNow();
 
-        if (UserProperty.role.ADMIN.equals(roomEntry.getRole())) {
+        if (UserProperty.jhbRole.ADMIN == roomEntry.getRole()) {
             btn_layout_2.setVisibility(View.VISIBLE);
         } else {
             btn_layout_1.setVisibility(View.VISIBLE);
@@ -516,7 +516,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     public void onRemoteUserPropertyUpdated(@NotNull EduUserInfo userInfos, @NotNull EduRoom classRoom,
                                             @Nullable Map<String, Object> cause) {
         super.onRemoteUserPropertyUpdated(userInfos, classRoom, cause);
-        if (Boolean.parseBoolean(UserProperty.get(userInfos, UserProperty.handUp.class))) {
+        if (UserProperty.handUp.TRUE.equals(UserProperty.get(userInfos, UserProperty.handUp.class))) {
             handUpUserId = userInfos.getUserUuid();
         } else {
             if (handUpUserId == userInfos.getUserUuid()) {

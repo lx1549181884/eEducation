@@ -93,27 +93,27 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
     }
 
     private boolean getHandUp(EduUserInfo userInfo) {
-        return Boolean.parseBoolean(UserProperty.get(userInfo, UserProperty.handUp.class));
+        return UserProperty.handUp.TRUE.equals(UserProperty.get(userInfo, UserProperty.handUp.class));
     }
 
     @NotNull
     private String getRole(EduUserInfo userInfo) {
         String role;
-        String value = UserProperty.get(userInfo, UserProperty.role.class);
+        Double value = (Double) UserProperty.get(userInfo, UserProperty.jhbRole.class);
         if (value == null) {
-            value = UserProperty.role.AUDIENCE;
+            value = Double.valueOf(UserProperty.jhbRole.AUDIENCE);
         }
-        switch (value) {
-            case UserProperty.role.ADMIN:
+        switch (value.intValue()) {
+            case UserProperty.jhbRole.ADMIN:
                 role = "管理员";
                 break;
-            case UserProperty.role.HOST:
+            case UserProperty.jhbRole.HOST:
                 role = "主持人";
                 break;
-            case UserProperty.role.GUEST:
+            case UserProperty.jhbRole.GUEST:
                 role = "嘉宾";
                 break;
-            case UserProperty.role.AUDIENCE:
+            case UserProperty.jhbRole.AUDIENCE:
             default:
                 role = "观众";
                 break;

@@ -14,10 +14,10 @@ public class RoomEntry implements Parcelable {
     private String roomName;
     private String roomUuid;
     private int roomType;
-    private @UserProperty.role
-    String role;
+    private @UserProperty.jhbRole
+    int role;
 
-    public RoomEntry(String userName, String userUuid, String roomName, String roomUuid, int roomType, @UserProperty.role String role) {
+    public RoomEntry(String userName, String userUuid, String roomName, String roomUuid, int roomType, @UserProperty.jhbRole int role) {
         this.userName = userName;
         this.userUuid = userUuid;
         this.roomName = roomName;
@@ -66,12 +66,12 @@ public class RoomEntry implements Parcelable {
         this.roomType = roomType;
     }
 
-    public @UserProperty.role
-    String getRole() {
+    public @UserProperty.jhbRole
+    int getRole() {
         return role;
     }
 
-    public void setRole(@UserProperty.role String role) {
+    public void setRole(@UserProperty.jhbRole int role) {
         this.role = role;
     }
 
@@ -87,7 +87,7 @@ public class RoomEntry implements Parcelable {
         dest.writeString(this.roomName);
         dest.writeString(this.roomUuid);
         dest.writeInt(this.roomType);
-        dest.writeString(this.role.toString());
+        dest.writeInt(this.role);
     }
 
     protected RoomEntry(Parcel in) {
@@ -96,7 +96,7 @@ public class RoomEntry implements Parcelable {
         this.roomName = in.readString();
         this.roomUuid = in.readString();
         this.roomType = in.readInt();
-        this.role = in.readString();
+        this.role = in.readInt();
     }
 
     public static final Creator<RoomEntry> CREATOR = new Creator<RoomEntry>() {

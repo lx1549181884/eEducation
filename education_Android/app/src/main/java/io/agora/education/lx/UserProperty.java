@@ -1,5 +1,6 @@
 package io.agora.education.lx;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.StringDef;
 
 import java.lang.annotation.Retention;
@@ -10,13 +11,13 @@ import io.agora.education.api.user.data.EduUserInfo;
 
 public class UserProperty {
 
-    @StringDef({role.AUDIENCE, role.ADMIN, role.HOST, role.GUEST})
+    @IntDef({jhbRole.AUDIENCE, jhbRole.ADMIN, jhbRole.HOST, jhbRole.GUEST})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface role {
-        String AUDIENCE = "audience"; // 观众
-        String ADMIN = "admin"; // 管理员
-        String HOST = "host"; // 主持人
-        String GUEST = "guest"; // 嘉宾
+    public @interface jhbRole {
+        int ADMIN = 1; // 管理员
+        int AUDIENCE = 2; // 观众
+        int HOST = 3; // 主持人
+        int GUEST = 4; // 嘉宾
     }
 
     @StringDef({handUp.TRUE, handUp.FALSE})
@@ -26,12 +27,12 @@ public class UserProperty {
         String FALSE = "false";
     }
 
-    public static String get(EduUserInfo userInfo, Class keyClass) {
-        String value = null;
+    public static Object get(EduUserInfo userInfo, Class keyClass) {
+        Object value = null;
         Map<String, Object> properties = userInfo.getUserProperties();
         String key = keyClass.getSimpleName();
         if (properties.containsKey(key)) {
-            value = (String) properties.get(key);
+            value = properties.get(key);
         }
         return value;
     }

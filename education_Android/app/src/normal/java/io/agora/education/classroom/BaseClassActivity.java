@@ -187,7 +187,7 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
                 RetrofitManager.instance().addHeader("token",
                         getMainEduRoom().getLocalUser().getUserInfo().getUserToken());
                 EduUser localUser = eduRoom.getLocalUser();
-                Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.role.class.getSimpleName(), roomEntry.getRole());
+                Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.jhbRole.class.getSimpleName(), String.valueOf(roomEntry.getRole()));
                 localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
                     @Override
                     public void onSuccess(@Nullable Unit unit) {
