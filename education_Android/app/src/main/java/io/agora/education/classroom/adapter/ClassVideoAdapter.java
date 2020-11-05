@@ -93,13 +93,6 @@ public class ClassVideoAdapter extends BaseQuickAdapter<EduStreamInfo, ClassVide
         ((Activity) getContext()).runOnUiThread(() -> {
             List<EduStreamInfo> list = new ArrayList<>();
             list.addAll(data);
-            /**过滤掉非Camera的流*/
-            Iterator<EduStreamInfo> streamInfoIterator = list.iterator();
-            while (streamInfoIterator.hasNext()) {
-                if (!streamInfoIterator.next().getVideoSourceType().equals(VideoSourceType.CAMERA)) {
-                    streamInfoIterator.remove();
-                }
-            }
             setDiffNewData(list);
             notifyDataSetChanged();
         });
