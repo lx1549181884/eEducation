@@ -187,7 +187,7 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
                 RetrofitManager.instance().addHeader("token",
                         getMainEduRoom().getLocalUser().getUserInfo().getUserToken());
                 EduUser localUser = eduRoom.getLocalUser();
-                Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.jhbRole.class.getSimpleName(), String.valueOf(roomEntry.getRole()));
+                Map.Entry<String, Object> property = new AbstractMap.SimpleEntry<>(UserProperty.jhbRole.class.getSimpleName(), roomEntry.getRole());
                 localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
                     @Override
                     public void onSuccess(@Nullable Unit unit) {
@@ -828,5 +828,14 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
     @Override
     public void onAttributesUpdated(@Nullable List<RtmChannelAttribute> p0) {
 
+    }
+
+    EduUserInfo getUserInfo(String userId) {
+        for (EduUserInfo userInfo : getCurFullUser()) {
+            if (userInfo.getUserUuid().equals(userId)) {
+                return userInfo;
+            }
+        }
+        return null;
     }
 }

@@ -399,7 +399,7 @@ internal open class EduUserImpl(
                 }))
     }
 
-    override fun setUserProperty(property: MutableMap.MutableEntry<String, String>,
+    override fun setUserProperty(property: MutableMap.MutableEntry<String, Any>,
                                  cause: MutableMap<String, String>, targetUser: EduUserInfo,
                                  callback: EduCallback<Unit>) {
         val req = EduUpdateUserPropertyReq(property.value, cause)

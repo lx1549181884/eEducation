@@ -32,7 +32,6 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.agora.base.ToastManager;
 import io.agora.education.R;
 import io.agora.education.api.EduCallback;
 import io.agora.education.api.message.EduChatMsg;
@@ -48,14 +47,11 @@ import io.agora.education.api.stream.data.LocalStreamInitOptions;
 import io.agora.education.api.stream.data.VideoSourceType;
 import io.agora.education.api.user.EduStudent;
 import io.agora.education.api.user.EduUser;
-import io.agora.education.api.user.data.EduBaseUserInfo;
-import io.agora.education.api.user.data.EduLocalUserInfo;
 import io.agora.education.api.user.data.EduUserEvent;
 import io.agora.education.api.user.data.EduUserInfo;
 import io.agora.education.api.user.data.EduUserStateChangeType;
 import io.agora.education.classroom.adapter.ClassVideoAdapter;
 import io.agora.education.classroom.bean.channel.Room;
-import io.agora.education.classroom.bean.msg.PeerMsg;
 import io.agora.education.classroom.fragment.UserListFragment;
 import io.agora.education.classroom.widget.RtcVideoView;
 import io.agora.education.lx.LiveConfig;
@@ -65,16 +61,6 @@ import io.agora.rtm.ErrorInfo;
 import io.agora.rtm.ResultCallback;
 import io.agora.rtm.RtmChannelAttribute;
 import kotlin.Unit;
-
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.Applying;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.CoVideoing;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Status.DisCoVideo;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Type.ABORT;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Type.ACCEPT;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Type.APPLY;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Type.CANCEL;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Type.EXIT;
-import static io.agora.education.classroom.bean.msg.PeerMsg.CoVideoMsg.Type.REJECT;
 
 public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener {
     private static final String TAG = "JhbClassActivity";
@@ -112,15 +98,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     private ClassVideoAdapter adapter;
     protected UserListFragment audienceListFragment;
 
-    /**
-     * 当前本地用户是否在连麦中
-     */
-    private int localCoVideoStatus = DisCoVideo;
-    /**
-     * 当前连麦用户
-     */
-    private EduBaseUserInfo curLinkedUser;
-
     private int unReadCount = 0;
 
     @Override
@@ -138,7 +115,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                     public void onSuccess(@org.jetbrains.annotations.Nullable EduStudent res) {
                         runOnUiThread(() -> showFragmentWithJoinSuccess());
                         if (isAdmin) { // 管理员主动连麦
-                            onLinkMediaChanged(true);
+                            publishStream(getLocalUserInfo());
                         }
                     }
 
@@ -146,7 +123,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                     public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
                         joinFailed(code, reason);
                     }
-                }, isAdmin);
+                }, false);
     }
 
     @Override
@@ -191,8 +168,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             layout_share_video.removeAllViews();
             renderStream(getMainEduRoom(), streamInfo, layout_share_video);
         }
-
-        resetHandState();
     }
 
     @Override
@@ -210,133 +185,44 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     /**
-     * 申请举手连麦
+     * 挂断
      */
-    private void applyCoVideo() {
-        EduUser localUser = getLocalUser();
-        Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.handUp.class.getSimpleName(), UserProperty.handUp.TRUE);
-        localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback() {
-            @Override
-            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                localCoVideoStatus = Applying;
-                resetHandState();
-                ToastUtils.showShort("成功");
-            }
-
-            @Override
-            public void onFailure(int code, @Nullable String reason) {
-                ToastUtils.showShort(code + " " + reason);
-            }
-        });
-    }
-
-    /**
-     * 取消举手(包括在老师处理前主动取消和老师同意后主动退出)
-     */
-    private void cancelCoVideo(EduCallback callback) {
-        if (localCoVideoStatus == CoVideoing) {
-            /*连麦过程中取消
-             * 1：关闭本地流
-             * 2：更新流信息到服务器
-             * 3：发送取消的点对点消息给老师
-             * 4：更新本地记录的连麦状态*/
-            if (getLocalCameraStream() != null) {
-                LocalStreamInitOptions options = new LocalStreamInitOptions(
-                        getLocalCameraStream().getStreamUuid(), false, false);
-                options.setStreamName(getLocalCameraStream().getStreamName());
-                getLocalUser().initOrUpdateLocalStream(options, new EduCallback<EduStreamInfo>() {
-                    @Override
-                    public void onSuccess(@Nullable EduStreamInfo res) {
-                        localCoVideoStatus = DisCoVideo;
-                        curLinkedUser = null;
-                        resetHandState();
-                        EduLocalUserInfo userInfo = getLocalUser().getUserInfo();
-                        PeerMsg.CoVideoMsg coVideoMsg = new PeerMsg.CoVideoMsg(EXIT, userInfo.getUserUuid(), userInfo.getUserName());
-                        PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
-                        getLocalUser().sendUserMessage(peerMsg.toJsonString(), getTeacher(), callback);
-                        getLocalUser().unPublishStream(res, new EduCallback<Boolean>() {
-                            @Override
-                            public void onSuccess(@Nullable Boolean res) {
-                            }
-
-                            @Override
-                            public void onFailure(int code, @Nullable String reason) {
-                                callback.onFailure(code, reason);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(int code, @Nullable String reason) {
-                        Log.e(TAG, "举手过程中取消失败");
-                        callback.onFailure(code, reason);
-                    }
-                });
-            }
-        } else {
-            /*举手过程中取消(老师还未处理)*/
-            EduUser localUser = getLocalUser();
-            Map.Entry<String, String> property = new AbstractMap.SimpleEntry<>(UserProperty.handUp.class.getSimpleName(), UserProperty.handUp.FALSE);
-            localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
+    @OnClick(R.id.btn_hung_up)
+    void hungUp() {
+        /*连麦过程中取消
+         * 1：关闭本地流
+         * 2：更新流信息到服务器
+         * 3：发送取消的点对点消息给老师
+         * 4：更新本地记录的连麦状态*/
+        if (getLocalCameraStream() != null) {
+            LocalStreamInitOptions options = new LocalStreamInitOptions(getLocalCameraStream().getStreamUuid(), false, false);
+            options.setStreamName(getLocalCameraStream().getStreamName());
+            getLocalUser().initOrUpdateLocalStream(options, new EduCallback<EduStreamInfo>() {
                 @Override
-                public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
-                    localCoVideoStatus = DisCoVideo;
-                    resetHandState();
-                    ToastUtils.showShort("成功");
-                }
+                public void onSuccess(@Nullable EduStreamInfo res) {
+                    getLocalUser().unPublishStream(res, new EduCallback<Boolean>() {
+                        @Override
+                        public void onSuccess(@Nullable Boolean res) {
+                            EduUser localUser = getLocalUser();
+                            Map.Entry<String, Object> property = new AbstractMap.SimpleEntry<>(UserProperty.applyCall.class.getSimpleName(), new UserProperty.applyCall(UserProperty.type.applyVideo_audienceHungUp));
+                            localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
+                                @Override
+                                public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
+                                    ToastUtils.showShort("挂断成功");
+                                }
 
-                @Override
-                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                    ToastUtils.showShort(code + " " + reason);
-                }
-            });
-        }
-    }
+                                @Override
+                                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                                    ToastUtils.showShort(code + " " + reason);
+                                }
+                            });
+                        }
 
-    /**
-     * 本地用户(举手、连麦)被老师同意/(拒绝、打断)
-     *
-     * @param coVideoing 是否正在连麦过程中
-     */
-    public void onLinkMediaChanged(boolean coVideoing) {
-        if (!coVideoing) {
-            /**正在连麦中时才会记录本地流；申请中取消或被拒绝本地不会记录流*/
-            if (localCoVideoStatus == CoVideoing) {
-                Log.e(TAG, "连麦过程中被打断");
-                /**连麦被打断，停止发流*/
-                LocalStreamInitOptions options = new LocalStreamInitOptions(
-                        getLocalCameraStream().getStreamUuid(), false, false);
-                options.setStreamName(getLocalCameraStream().getStreamName());
-                getLocalUser().initOrUpdateLocalStream(options, new EduCallback<EduStreamInfo>() {
-                    @Override
-                    public void onSuccess(@Nullable EduStreamInfo res) {
-                        getLocalUser().unPublishStream(res, new EduCallback<Boolean>() {
-                            @Override
-                            public void onSuccess(@Nullable Boolean res) {
-                                Log.e(TAG, "连麦过程中被打断，停止发流成功");
-                            }
-
-                            @Override
-                            public void onFailure(int code, @Nullable String reason) {
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(int code, @Nullable String reason) {
-                    }
-                });
-            }
-        } else {
-            /**连麦中，发流*/
-            EduStreamInfo streamInfo = new EduStreamInfo(getLocalUserInfo().getStreamUuid(), null,
-                    VideoSourceType.CAMERA, true, true, getLocalUserInfo());
-            /**举手连麦，需要新建流信息*/
-            getLocalUser().publishStream(streamInfo, new EduCallback<Boolean>() {
-                @Override
-                public void onSuccess(@Nullable Boolean res) {
-                    Log.e(TAG, "发流成功");
-                    setLocalCameraStream(streamInfo);
+                        @Override
+                        public void onFailure(int code, @Nullable String reason) {
+                            ToastUtils.showShort(code + " " + reason);
+                        }
+                    });
                 }
 
                 @Override
@@ -345,32 +231,29 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 }
             });
         }
-        localCoVideoStatus = coVideoing ? CoVideoing : DisCoVideo;
-        curLinkedUser = coVideoing ? getLocalUserInfo() : null;
-        resetHandState();
     }
 
     /**
-     * 被取消连麦
+     * 用户推流(暂时只能本地用户推流，远端用户推流有问题)
      */
-    private void resetHandState() {
-        runOnUiThread(() -> {
-            boolean hasTeacher = getTeacher() != null;
-            /**有老师的情况下才显示*/
-//            layout_hand_up.setVisibility(hasTeacher ? View.VISIBLE : View.GONE);
-            /**当前连麦用户不是本地用户时，隐藏*/
-            if (curLinkedUser != null) {
-//                layout_hand_up.setVisibility((curLinkedUser.equals(getLocalUserInfo()) ?
-//                        View.VISIBLE : View.GONE));
-                layout_hand_up.setEnabled(curLinkedUser.equals(getLocalUserInfo()));
-                layout_hand_up.setSelected(true);
-            } else {
-                layout_hand_up.setEnabled(true);
-                layout_hand_up.setSelected(false);
+    public void publishStream(EduUserInfo eduUserInfo) {
+        /**连麦中，发流*/
+        EduStreamInfo streamInfo = new EduStreamInfo(eduUserInfo.getStreamUuid(), null,
+                VideoSourceType.CAMERA, true, true, eduUserInfo);
+        /**举手连麦，需要新建流信息*/
+        getLocalUser().publishStream(streamInfo, new EduCallback<Boolean>() {
+            @Override
+            public void onSuccess(@Nullable Boolean res) {
+                Log.e(TAG, "发流成功");
+                if (streamInfo.getPublisher().getUserUuid().equals(getLocalUserInfo().getUserUuid())) {
+                    setLocalCameraStream(streamInfo);
+                }
             }
-//            if (hasTeacher) {
-//                layout_hand_up.setSelected(localCoVideoStatus != DisCoVideo);
-//            }
+
+            @Override
+            public void onFailure(int code, @Nullable String reason) {
+                ToastUtils.showShort(code + " " + reason);
+            }
         });
     }
 
@@ -417,16 +300,12 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     public void onRemoteUsersInitialized(@NotNull List<? extends EduUserInfo> users, @NotNull EduRoom classRoom) {
         super.onRemoteUsersInitialized(users, classRoom);
         title_view.setTitle(String.format(Locale.getDefault(), "%s", getMediaRoomName()));
-        /**老师不在的时候不能举手*/
-        resetHandState();
     }
 
     @Override
     public void onRemoteUsersJoined(@NotNull List<? extends EduUserInfo> users, @NotNull EduRoom classRoom) {
         super.onRemoteUsersJoined(users, classRoom);
         title_view.setTitle(String.format(Locale.getDefault(), "%s", getMediaRoomName()));
-        /**老师不在的时候不能举手*/
-        resetHandState();
         refreshVideoList();
         refreshAudienceList();
     }
@@ -435,8 +314,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     public void onRemoteUserLeft(@NotNull EduUserEvent userEvent, @NotNull EduRoom classRoom) {
         super.onRemoteUserLeft(userEvent, classRoom);
         title_view.setTitle(String.format(Locale.getDefault(), "%s", getMediaRoomName()));
-        /**老师不在的时候不能举手*/
-        resetHandState();
     }
 
     @Override
@@ -516,9 +393,12 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     public void onRemoteUserPropertyUpdated(@NotNull EduUserInfo userInfos, @NotNull EduRoom classRoom,
                                             @Nullable Map<String, Object> cause) {
         super.onRemoteUserPropertyUpdated(userInfos, classRoom, cause);
-        if (UserProperty.handUp.TRUE.equals(UserProperty.get(userInfos, UserProperty.handUp.class))) {
+        Object type = UserProperty.get(userInfos, UserProperty.applyCall.class, UserProperty.type.class);
+        if (UserProperty.type.applyAudio_apply.equals(type) || UserProperty.type.applyVideo_apply.equals(type)) {
             handUpUserId = userInfos.getUserUuid();
-        } else {
+            ToastUtils.showShort("举手 " + userInfos.getUserName() + " " + userInfos.getUserUuid());
+        } else if (UserProperty.type.applyAudio_cancel.equals(type) || UserProperty.type.applyVideo_cancel.equals(type)) {
+            ToastUtils.showShort("取消举手 " + userInfos.getUserName() + " " + userInfos.getUserUuid());
             if (handUpUserId == userInfos.getUserUuid()) {
                 handUpUserId = null;
             }
@@ -552,6 +432,25 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         super.onLocalUserPropertyUpdated(userInfo, cause);
         refreshVideoList();
         refreshAudienceList();
+        String type = (String) UserProperty.get(userInfo, UserProperty.applyCall.class, UserProperty.type.class);
+        if (type == null) {
+            type = UserProperty.type.applyVideo_cancel;
+        }
+        switch (type) {
+            case UserProperty.type.applyAudio_adminAccept:
+            case UserProperty.type.applyVideo_adminAccept:
+                ToastUtils.showShort(R.string.accept_interactive);
+                publishStream(getLocalUserInfo());
+                break;
+            case UserProperty.type.applyAudio_adminReject:
+            case UserProperty.type.applyVideo_adminReject:
+                ToastUtils.showShort(R.string.reject_interactive);
+                break;
+            case UserProperty.type.applyAudio_adminHungUp:
+            case UserProperty.type.applyVideo_adminHungUp:
+                ToastUtils.showShort(R.string.abort_interactive);
+                break;
+        }
     }
 
     @Override
@@ -587,32 +486,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     public void onUserMessageReceived(@NotNull EduMsg message) {
         super.onUserMessageReceived(message);
-        PeerMsg peerMsg = PeerMsg.fromJson(message.getMessage(), PeerMsg.class);
-        if (peerMsg.cmd == PeerMsg.Cmd.CO_VIDEO) {
-            PeerMsg.CoVideoMsg coVideoMsg = peerMsg.getMsg(PeerMsg.CoVideoMsg.class);
-            switch (coVideoMsg.type) {
-                case REJECT:
-                    onLinkMediaChanged(false);
-                    ToastManager.showShort(R.string.reject_interactive);
-                    break;
-                case ACCEPT:
-                    onLinkMediaChanged(true);
-                    ToastManager.showShort(R.string.accept_interactive);
-                    break;
-                case ABORT:
-                    onLinkMediaChanged(false);
-                    ToastManager.showShort(R.string.abort_interactive);
-                    break;
-                case APPLY:
-                    handUpUserId = coVideoMsg.userId;
-                    ToastUtils.showShort("举手 " + coVideoMsg.userName + " " + coVideoMsg.userId);
-                    break;
-                case CANCEL:
-                    handUpUserId = null;
-                    ToastUtils.showShort("取消举手 " + coVideoMsg.userName + " " + coVideoMsg.userId);
-                    break;
-            }
-        }
     }
 
     @Override
@@ -683,21 +556,30 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 return;
             }
         }
-        /*举手*/
-        applyCoVideo();
+
+        setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_apply, new EduCallback() {
+            @Override
+            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                ToastUtils.showShort("举手成功");
+            }
+
+            @Override
+            public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                ToastUtils.showShort(code + " " + reason);
+            }
+        });
     }
 
     @OnClick(R.id.btn_hand_down)
     void handDown() {
-        /*取消举手(包括在老师处理前主动取消和老师同意后主动退出)*/
-        cancelCoVideo(new EduCallback<EduMsg>() {
+        setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_cancel, new EduCallback() {
             @Override
-            public void onSuccess(@Nullable EduMsg res) {
-                ToastUtils.showShort("成功");
+            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                ToastUtils.showShort("取消成功");
             }
 
             @Override
-            public void onFailure(int code, @Nullable String reason) {
+            public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
                 ToastUtils.showShort(code + " " + reason);
             }
         });
@@ -705,73 +587,41 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
 
     @OnClick(R.id.btn_accept)
     void accept() {
-        accept(new EduCallback<EduMsg>() {
+        setApplyCall(getUserInfo(handUpUserId), UserProperty.type.applyAudio_adminAccept, new EduCallback() {
             @Override
-            public void onSuccess(@org.jetbrains.annotations.Nullable EduMsg res) {
-
+            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                ToastUtils.showShort("接收成功");
+                publishStream(getUserInfo(handUpUserId));
             }
 
             @Override
             public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-
+                ToastUtils.showShort(code + " " + reason);
             }
         });
     }
 
     @OnClick(R.id.btn_reject)
     void reject() {
-        reject(new EduCallback<EduMsg>() {
+        setApplyCall(getUserInfo(handUpUserId), UserProperty.type.applyAudio_adminReject, new EduCallback() {
             @Override
-            public void onSuccess(@org.jetbrains.annotations.Nullable EduMsg res) {
-
+            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                ToastUtils.showShort("拒绝成功");
             }
 
             @Override
             public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-
+                ToastUtils.showShort(code + " " + reason);
             }
         });
     }
 
-    EduUserInfo getUserInfo(String userId) {
-        for (EduUserInfo userInfo : getCurFullUser()) {
-            if (userInfo.getUserUuid().equals(userId)) {
-                return userInfo;
-            }
-        }
-        return null;
-    }
-
     /**
-     * 同意连麦
+     * 设置举手连麦状态
      */
-    private void accept(EduCallback<EduMsg> callback) {
-        EduUserInfo userInfo = getUserInfo(handUpUserId);
-        if (userInfo == null) {
-            return;
-        }
-        PeerMsg.CoVideoMsg coVideoMsg = new PeerMsg.CoVideoMsg(
-                ACCEPT,
-                userInfo.getUserUuid(),
-                userInfo.getUserName());
-        PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
-        getLocalUser().sendUserMessage(peerMsg.toJsonString(), userInfo, callback);
-    }
-
-    /**
-     * 拒绝连麦
-     */
-    private void reject(EduCallback<EduMsg> callback) {
-        EduUserInfo userInfo = getUserInfo(handUpUserId);
-        if (userInfo == null) {
-            return;
-        }
-        PeerMsg.CoVideoMsg coVideoMsg = new PeerMsg.CoVideoMsg(
-                REJECT,
-                userInfo.getUserUuid(),
-                userInfo.getUserName());
-        PeerMsg peerMsg = new PeerMsg(PeerMsg.Cmd.CO_VIDEO, coVideoMsg);
-        getLocalUser().sendUserMessage(peerMsg.toJsonString(), userInfo, callback);
+    private void setApplyCall(EduUserInfo eduUserInfo, @UserProperty.type String type, EduCallback callback) {
+        Map.Entry<String, Object> property = new AbstractMap.SimpleEntry<>(UserProperty.applyCall.class.getSimpleName(), new UserProperty.applyCall(type));
+        getLocalUser().setUserProperty(property, new HashMap<>(), eduUserInfo, callback);
     }
 
     @OnClick(R.id.btn_video_layout_1)
@@ -839,7 +689,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         getLocalUser().allowStudentChat(!allow, new EduCallback<Unit>() {
             @Override
             public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
-                ToastUtils.showShort("成功");
+                ToastUtils.showShort("禁言成功");
             }
 
             @Override

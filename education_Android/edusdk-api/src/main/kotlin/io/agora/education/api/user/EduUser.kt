@@ -60,7 +60,7 @@ interface EduUser {
     fun setRoomProperty(property: MutableMap.MutableEntry<String, String>,
                         cause: MutableMap<String, String>, callback: EduCallback<Unit>)
 
-    fun setUserProperty(property: MutableMap.MutableEntry<String, String>,
+    fun setUserProperty(property: MutableMap.MutableEntry<String, Any>,
                         cause: MutableMap<String, String>, targetUser: EduUserInfo, callback: EduCallback<Unit>)
 
     fun allowStudentChat(isAllow: Boolean, callback: EduCallback<Unit>)

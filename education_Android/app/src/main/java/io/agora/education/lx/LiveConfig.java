@@ -14,7 +14,7 @@ public class LiveConfig implements Serializable {
     public List<DataBean> data;
 
     public LiveConfig() {
-        this(CMD.CMD_1, null);
+        this(CMD.CMD_3, null);
     }
 
     public LiveConfig(@CMD String cmd, List<DataBean> data) {

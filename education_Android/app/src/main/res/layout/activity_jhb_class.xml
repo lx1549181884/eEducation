@@ -97,22 +97,33 @@
             android:id="@+id/btn_layout_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:visibility="gone">
 
-            <Button
-                android:id="@+id/btn_hand_down"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="取消举手" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/btn_hand_down"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="取消举手" />
+
+                <Button
+                    android:id="@+id/btn_hand_up"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="举手" />
+            </LinearLayout>
 
             <Button
-                android:id="@+id/btn_hand_up"
-                android:layout_width="0dp"
+                android:id="@+id/btn_hung_up"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="举手" />
-
+                android:text="挂断" />
         </LinearLayout>
 
         <LinearLayout
@@ -144,7 +155,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="同意" />
+                    android:text="接受" />
             </LinearLayout>
 
             <LinearLayout
