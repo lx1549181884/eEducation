@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.google.gson.Gson;
 import com.herewhite.sdk.domain.GlobalState;
@@ -307,13 +308,13 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
 
     protected List<EduStreamInfo> getCurFullStream() {
         List<EduStreamInfo> list = (getMyMediaRoom() != null) ? getMyMediaRoom().getFullStreamList() : null;
-        LogUtil.log("getCurFullStream", list);
+        LogUtil.log("getCurFullStream", list.size());
         return list;
     }
 
     protected List<EduUserInfo> getCurFullUser() {
         List<EduUserInfo> list = (getMyMediaRoom() != null) ? getMyMediaRoom().getFullUserList() : null;
-        LogUtil.log("getCurFullUser", list);
+        LogUtil.log("getCurFullUser", list.size());
         return list;
     }
 
@@ -439,6 +440,15 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
     public void renderStream(EduRoom room, EduStreamInfo eduStreamInfo, @Nullable ViewGroup viewGroup) {
         runOnUiThread(() -> room.getLocalUser().setStreamView(eduStreamInfo,
                 room.getRoomInfo().getRoomUuid(), viewGroup));
+    }
+
+    protected <T> T getProperty(Map<String, Object> properties, Class<T> clazz, T defaultValue) {
+        try {
+            return GsonUtils.fromJson(properties.get(clazz.getSimpleName()).toString(), clazz);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return defaultValue;
+        }
     }
 
     protected String getProperty(Map<String, Object> properties, String key) {

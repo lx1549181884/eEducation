@@ -176,7 +176,7 @@ internal open class EduUserImpl(
 
     override fun unPublishStream(streamInfo: EduStreamInfo, callback: EduCallback<Boolean>) {
         Log.e("EduUserImpl", "删除流")
-        AgoraLog.i("$TAG->删除流:${Gson().toJson(streamInfo)}")
+//        AgoraLog.i("$TAG->删除流:${Gson().toJson(streamInfo)}")
         RetrofitManager.instance()!!.getService(API_BASE_URL, StreamService::class.java)
                 .deleteStream(APPID, eduRoom.getRoomInfo().roomUuid, userInfo.userUuid,
                         streamInfo.streamUuid)

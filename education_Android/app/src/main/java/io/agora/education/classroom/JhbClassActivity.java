@@ -16,7 +16,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.blankj.utilcode.util.GsonUtils;
+import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.google.android.material.tabs.TabLayout;
 
@@ -54,12 +54,9 @@ import io.agora.education.classroom.adapter.ClassVideoAdapter;
 import io.agora.education.classroom.bean.channel.Room;
 import io.agora.education.classroom.fragment.UserListFragment;
 import io.agora.education.classroom.widget.RtcVideoView;
-import io.agora.education.lx.LiveConfig;
 import io.agora.education.lx.LogUtil;
+import io.agora.education.lx.RoomProperty;
 import io.agora.education.lx.UserProperty;
-import io.agora.rtm.ErrorInfo;
-import io.agora.rtm.ResultCallback;
-import io.agora.rtm.RtmChannelAttribute;
 import kotlin.Unit;
 
 public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener {
@@ -113,10 +110,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 new EduCallback<EduStudent>() {
                     @Override
                     public void onSuccess(@org.jetbrains.annotations.Nullable EduStudent res) {
-                        runOnUiThread(() -> showFragmentWithJoinSuccess());
-                        if (isAdmin) { // 管理员主动连麦
-                            publishStream(getLocalUserInfo());
-                        }
+                        runOnUiThread(() -> onJoinSuccess(isAdmin));
                     }
 
                     @Override
@@ -124,6 +118,25 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                         joinFailed(code, reason);
                     }
                 }, false);
+    }
+
+    private void onJoinSuccess(boolean isAdmin) {
+        showFragmentWithJoinSuccess();
+        onRoomPropertyChanged(getMainEduRoom(), null);
+        onLocalUserPropertyUpdated(getLocalUserInfo(), null);
+        if (isAdmin) { // 管理员主动连麦
+            setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
+                @Override
+                public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                    ToastUtils.showShort("管理员主动连麦");
+                }
+
+                @Override
+                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                    ToastUtils.showShort(code + " " + reason);
+                }
+            });
+        }
     }
 
     @Override
@@ -134,7 +147,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
         rv_videos.setLayoutManager(gridLayoutManager);
-        rv_videos.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        rv_videos.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (ScreenUtils.getAppScreenWidth() * 0.7)));
         adapter = new ClassVideoAdapter();
         rv_videos.setAdapter(adapter);
 
@@ -386,6 +399,9 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 revRecordMsg = false;
                 updateUnReadCount(chatRoomShowing());
             }
+            liveConfig = getProperty(classRoom.getRoomProperties(), RoomProperty.liveConfig.class, liveConfig);
+            LogUtil.log("onRoomPropertyChanged", liveConfig);
+            refreshVideoList();
         });
     }
 
@@ -498,16 +514,16 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     private void showVideoList(List<EduStreamInfo> list) {
-        LogUtil.log("showVideoList", list);
+        LogUtil.log("showVideoList", list.size());
         runOnUiThread(() -> {
             for (EduStreamInfo info : list) {
                 renderStream(getMainEduRoom(), info, null);
             }
             List<EduStreamInfo> finalList = new ArrayList<>();
             if (liveConfig.data != null) {
-                for (LiveConfig.DataBean bean : liveConfig.data) {
+                for (RoomProperty.liveConfig.DataBean bean : liveConfig.data) {
                     for (EduStreamInfo info : list) {
-                        if (info.getStreamUuid().equals(bean.uid)) {
+                        if (info.getStreamUuid().equals(bean.streamUuid)) {
                             finalList.add(info);
                             break;
                         }
@@ -515,26 +531,26 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 }
             }
             switch (liveConfig.cmd) {
-                case LiveConfig.CMD.CMD_1:
-                case LiveConfig.CMD.CMD_2:
+                case RoomProperty.liveConfig.CMD.CMD_1:
+                case RoomProperty.liveConfig.CMD.CMD_2:
                     rv_videos.setVisibility(View.GONE);
                     rl_videos2.setVisibility(View.VISIBLE);
-                    rvv_small.setViewVisibility(LiveConfig.CMD.CMD_1.equals(liveConfig.cmd) ? View.GONE : View.VISIBLE);
+                    rvv_small.setViewVisibility(liveConfig.cmd == RoomProperty.liveConfig.CMD.CMD_1 ? View.GONE : View.VISIBLE);
                     adapter.setNewList(new ArrayList<>());
-                    for (int i = 0; i < list.size(); i++) {
-                        EduStreamInfo info = list.get(i);
+                    for (int i = 0; i < finalList.size(); i++) {
+                        EduStreamInfo info = finalList.get(i);
                         if (i == 0) {
                             renderStream(getMainEduRoom(), info, rvv_large);
-                        } else if (i == 1 && LiveConfig.CMD.CMD_2.equals(liveConfig.cmd)) {
+                        } else if (i == 1 && RoomProperty.liveConfig.CMD.CMD_2 == liveConfig.cmd) {
                             renderStream(getMainEduRoom(), info, rvv_small);
                         }
                     }
                     break;
-                case LiveConfig.CMD.CMD_3:
+                case RoomProperty.liveConfig.CMD.CMD_3:
                 default:
                     rv_videos.setVisibility(View.VISIBLE);
                     rl_videos2.setVisibility(View.GONE);
-                    adapter.setNewList(list);
+                    adapter.setNewList(finalList);
                     break;
             }
         });
@@ -626,62 +642,29 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
 
     @OnClick(R.id.btn_video_layout_1)
     void videoLayout1() {
-        ArrayList<LiveConfig.DataBean> data = new ArrayList<>();
+        ArrayList<RoomProperty.liveConfig.DataBean> data = new ArrayList<>();
         for (EduStreamInfo info : getCurFullStream()) {
-            data.add(new LiveConfig.DataBean(info.getStreamUuid()));
+            data.add(new RoomProperty.liveConfig.DataBean(info.getStreamUuid()));
         }
-        setChannelVideoLayout(new LiveConfig(LiveConfig.CMD.CMD_1, data));
     }
 
     @OnClick(R.id.btn_video_layout_2)
     void videoLayout2() {
-        ArrayList<LiveConfig.DataBean> data = new ArrayList<>();
+        ArrayList<RoomProperty.liveConfig.DataBean> data = new ArrayList<>();
         for (EduStreamInfo info : getCurFullStream()) {
-            data.add(new LiveConfig.DataBean(info.getStreamUuid()));
+            data.add(new RoomProperty.liveConfig.DataBean(info.getStreamUuid()));
         }
-        setChannelVideoLayout(new LiveConfig(LiveConfig.CMD.CMD_2, data));
     }
 
     @OnClick(R.id.btn_video_layout_3)
     void videoLayout3() {
-        ArrayList<LiveConfig.DataBean> data = new ArrayList<>();
+        ArrayList<RoomProperty.liveConfig.DataBean> data = new ArrayList<>();
         for (EduStreamInfo info : getCurFullStream()) {
-            data.add(new LiveConfig.DataBean(info.getStreamUuid()));
+            data.add(new RoomProperty.liveConfig.DataBean(info.getStreamUuid()));
         }
-        setChannelVideoLayout(new LiveConfig(LiveConfig.CMD.CMD_3, data));
     }
 
-    private void setChannelVideoLayout(LiveConfig liveConfig) {
-        ArrayList<RtmChannelAttribute> attributes = new ArrayList<>();
-        attributes.add(new RtmChannelAttribute(LiveConfig.KEY, GsonUtils.toJson(liveConfig)));
-        updateAttributes(attributes, new ResultCallback<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                ToastUtils.showShort("设置成功");
-            }
-
-            @Override
-            public void onFailure(ErrorInfo errorInfo) {
-                ToastUtils.showShort(errorInfo.toString());
-            }
-        });
-    }
-
-    LiveConfig liveConfig = new LiveConfig();
-
-    @Override
-    public void onAttributesUpdated(@Nullable List<RtmChannelAttribute> p0) {
-        super.onAttributesUpdated(p0);
-        runOnUiThread(() -> {
-            for (RtmChannelAttribute attribute : p0) {
-                if (LiveConfig.KEY.equals(attribute.getKey())) {
-                    liveConfig = GsonUtils.fromJson(attribute.getValue(), LiveConfig.class);
-                    break;
-                }
-            }
-            refreshVideoList();
-        });
-    }
+    RoomProperty.liveConfig liveConfig = new RoomProperty.liveConfig();
 
     @OnClick(R.id.btn_mute_chat_all)
     void muteChatAll() {

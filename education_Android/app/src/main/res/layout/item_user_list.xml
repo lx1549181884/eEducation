@@ -63,6 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="0dp"
         android:text="禁言"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_btn_mute_video"
         app:layout_constraintTop_toTopOf="parent" />
