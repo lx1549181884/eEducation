@@ -95,7 +95,7 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
     }
 
     private boolean getHandUp(EduUserInfo userInfo) {
-        return UserProperty.type.applyAudio_apply.equals(UserProperty.get(userInfo, UserProperty.applyCall.class, UserProperty.type.class));
+        return UserProperty.type.applyVideo_apply.equals(UserProperty.get(userInfo, UserProperty.applyCall.class, UserProperty.type.class));
     }
 
     @NotNull
