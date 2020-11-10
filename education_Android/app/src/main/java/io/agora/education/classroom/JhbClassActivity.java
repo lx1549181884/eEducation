@@ -399,7 +399,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 revRecordMsg = false;
                 updateUnReadCount(chatRoomShowing());
             }
-            liveConfig = getProperty(classRoom.getRoomProperties(), RoomProperty.liveConfig.class, liveConfig);
+            liveConfig = UserProperty.getProperty(classRoom.getRoomProperties(), RoomProperty.liveConfig.class, liveConfig);
             LogUtil.log("onRoomPropertyChanged", liveConfig);
             refreshVideoList();
         });

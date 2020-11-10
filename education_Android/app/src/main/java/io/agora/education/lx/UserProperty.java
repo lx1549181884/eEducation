@@ -3,6 +3,8 @@ package io.agora.education.lx;
 import androidx.annotation.IntDef;
 import androidx.annotation.StringDef;
 
+import com.blankj.utilcode.util.GsonUtils;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
@@ -48,7 +50,7 @@ public class UserProperty {
         }
 
         @type
-        String type;
+        public String type;
     }
 
     public static Object get(EduUserInfo userInfo, Class... classes) {
@@ -69,6 +71,15 @@ public class UserProperty {
             return get((Map) value, Arrays.copyOfRange(keys, 1, keys.length));
         } else {
             return value;
+        }
+    }
+
+    public static <T> T getProperty(Map<String, Object> properties, Class<T> clazz, T defaultValue) {
+        try {
+            return GsonUtils.fromJson(properties.get(clazz.getSimpleName()).toString(), clazz);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return defaultValue;
         }
     }
 }
