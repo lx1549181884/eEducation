@@ -23,12 +23,12 @@ public class UserProperty {
         int GUEST = 4; // 嘉宾
     }
 
-    @StringDef({type.applyAudio_apply, type.applyAudio_adminDidReceived, type.applyAudio_adminAccept, type.applyAudio_adminReject, type.applyAudio_cancel, type.applyAudio_adminHungUp, type.applyAudio_audienceHungUp,
-            type.applyVideo_apply, type.applyVideo_adminDidReceived, type.applyVideo_adminAccept, type.applyVideo_adminReject, type.applyVideo_cancel, type.applyVideo_adminHungUp, type.applyVideo_audienceHungUp})
+    @StringDef({type.applyAudio_apply, type.applyAudio_adminReceived, type.applyAudio_adminAccept, type.applyAudio_adminReject, type.applyAudio_cancel, type.applyAudio_adminHungUp, type.applyAudio_audienceHungUp,
+            type.applyVideo_apply, type.applyVideo_adminReceived, type.applyVideo_adminAccept, type.applyVideo_adminReject, type.applyVideo_cancel, type.applyVideo_adminHungUp, type.applyVideo_audienceHungUp})
     @Retention(RetentionPolicy.SOURCE)
     public @interface type {
         String applyAudio_apply = "applyAudio";
-        String applyAudio_adminDidReceived = "applyAudio_adminReceived";
+        String applyAudio_adminReceived = "applyAudio_adminReceived";
         String applyAudio_adminAccept = "applyAudio_adminAccept";
         String applyAudio_adminReject = "applyAudio_adminReject";
         String applyAudio_cancel = "applyAudio_canceled";
@@ -36,12 +36,24 @@ public class UserProperty {
         String applyAudio_audienceHungUp = "applyAudio_audienceHungUp";
 
         String applyVideo_apply = "applyVideo";
-        String applyVideo_adminDidReceived = "applyVideo_adminReceived";
+        String applyVideo_adminReceived = "applyVideo_adminReceived";
         String applyVideo_adminAccept = "applyVideo_adminAccept";
         String applyVideo_adminReject = "applyVideo_adminReject";
         String applyVideo_cancel = "applyVideo_canceled";
         String applyVideo_adminHungUp = "applyVideo_adminHungUp";
         String applyVideo_audienceHungUp = "applyVideo_audienceHungUp";
+
+        String adminInvite_audioLink = "adminInvite_audioLink"; //邀请语音链接
+        String adminInvite_audioLink_audienceReject = "adminInvite_audioLink_audienceReject"; //观众 拒绝连麦
+        String adminInvite_audioLink_audienceAccept = "adminInvite_audioLink_audienceAccept"; //观众同意连麦
+        String adminInvite_audioLink_adminCancel = "adminInvite_audioLink_adminCancel"; //管理员取消邀请连麦
+
+        String adminInvite_openAudio = "adminInvite_openAudio"; //邀请打开摄像头
+        String adminInvite_openAudio_audienceReject = "adminInvite_openAudio_audienceReject"; //邀请打开麦克风，观众拒绝
+        String adminInvite_openAudio_audienceAccept = "adminInvite_openAudio_audienceAccept"; //邀请打开麦克风，观众接受
+        String adminInvite_openVideo = "adminInvite_openVideo"; //邀请打开摄像头
+        String adminInvite_openVideo_audienceReject = "adminInvite_openVideo_audienceReject"; //邀请打开摄像头，观众拒绝
+        String adminInvite_openVideo_audienceAccept = "adminInvite_openVideo_audienceAccept"; //邀请打开摄像头，观众接受
     }
 
     public static class applyCall {

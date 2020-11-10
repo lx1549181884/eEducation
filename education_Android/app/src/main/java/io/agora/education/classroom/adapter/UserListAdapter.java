@@ -99,7 +99,15 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         if (applyCall == null) {
             return false;
         } else {
-            return UserProperty.type.applyAudio_apply.equals(applyCall.type) || UserProperty.type.applyVideo_apply.equals(applyCall.type);
+            switch (applyCall.type) {
+                case UserProperty.type.applyAudio_apply:
+                case UserProperty.type.applyVideo_apply:
+                case UserProperty.type.applyAudio_adminReceived:
+                case UserProperty.type.applyVideo_adminReceived:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 
