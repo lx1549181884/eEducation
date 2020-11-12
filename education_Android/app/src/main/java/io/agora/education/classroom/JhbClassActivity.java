@@ -44,7 +44,9 @@ import io.agora.education.api.stream.data.EduStreamEvent;
 import io.agora.education.api.stream.data.EduStreamInfo;
 import io.agora.education.api.stream.data.EduStreamStateChangeType;
 import io.agora.education.api.stream.data.LocalStreamInitOptions;
+import io.agora.education.api.stream.data.StreamSubscribeOptions;
 import io.agora.education.api.stream.data.VideoSourceType;
+import io.agora.education.api.stream.data.VideoStreamType;
 import io.agora.education.api.user.EduStudent;
 import io.agora.education.api.user.EduUser;
 import io.agora.education.api.user.data.EduUserEvent;
@@ -520,16 +522,47 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 renderStream(getMainEduRoom(), info, null);
             }
             List<EduStreamInfo> finalList = new ArrayList<>();
-            if (liveConfig.data != null) {
-                for (RoomProperty.liveConfig.DataBean bean : liveConfig.data) {
-                    for (EduStreamInfo info : list) {
+
+            for (int i = 0; i < list.size(); i++) {
+                EduStreamInfo info = list.get(i);
+                boolean isOutput = false;
+                if (liveConfig.data != null) {
+                    for (RoomProperty.liveConfig.DataBean bean : liveConfig.data) {
                         if (info.getStreamUuid().equals(bean.streamUuid)) {
                             finalList.add(info);
+                            isOutput = true;
                             break;
                         }
                     }
                 }
+                if (isOutput) {
+                    getLocalUser().subscribeStream(info, new StreamSubscribeOptions(true, true, VideoStreamType.HIGH), new EduCallback<Unit>() {
+                        @Override
+                        public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
+
+                        }
+
+                        @Override
+                        public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+
+                        }
+                    });
+                } else {
+                    getLocalUser().unSubscribeStream(info, new StreamSubscribeOptions(false, false, VideoStreamType.HIGH), new EduCallback<Unit>() {
+                        @Override
+                        public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
+
+                        }
+
+                        @Override
+                        public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+
+                        }
+                    });
+                }
             }
+
+
             switch (liveConfig.cmd) {
                 case RoomProperty.liveConfig.CMD.CMD_1:
                 case RoomProperty.liveConfig.CMD.CMD_2:
