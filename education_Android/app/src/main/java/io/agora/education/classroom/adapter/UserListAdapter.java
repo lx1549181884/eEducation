@@ -114,7 +114,12 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
     @NotNull
     private String getRole(EduUserInfo userInfo) {
         String role;
-        Double value = (Double) UserProperty.get(userInfo, UserProperty.jhbRole.class);
+        Double value = null;
+        try {
+            value = Double.valueOf(String.valueOf(UserProperty.get(userInfo, UserProperty.jhbRole.class)));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
         if (value == null) {
             value = Double.valueOf(UserProperty.jhbRole.AUDIENCE);
         }
