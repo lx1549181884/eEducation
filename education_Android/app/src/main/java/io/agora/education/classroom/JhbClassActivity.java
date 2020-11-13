@@ -111,12 +111,11 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     protected void initData() {
         super.initData();
-        final boolean isAdmin = UserProperty.jhbRole.ADMIN == roomEntry.getRole();
         joinRoom(getMainEduRoom(), roomEntry.getUserName(), roomEntry.getUserUuid(), true, false, true,
                 new EduCallback<EduStudent>() {
                     @Override
                     public void onSuccess(@org.jetbrains.annotations.Nullable EduStudent res) {
-                        runOnUiThread(() -> onJoinSuccess(isAdmin));
+                        runOnUiThread(() -> onJoinSuccess(roomEntry.getRole()));
                     }
 
                     @Override
@@ -126,22 +125,39 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 }, false);
     }
 
-    private void onJoinSuccess(boolean isAdmin) {
+    private void onJoinSuccess(@UserProperty.jhbRole int jhbRole) {
         showFragmentWithJoinSuccess();
         onRoomPropertyChanged(getMainEduRoom(), null);
         onLocalUserPropertyUpdated(getLocalUserInfo(), null);
-        if (isAdmin) { // 管理员主动连麦
-            setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
-                @Override
-                public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                    ToastUtils.showShort("管理员主动连麦");
-                }
+        switch (jhbRole) { // 管理员/主持人/嘉宾主动连麦
+            case UserProperty.jhbRole.ADMIN:
+            case UserProperty.jhbRole.HOST:
+            case UserProperty.jhbRole.GUEST:
+                setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
+                    @Override
+                    public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                        ToastUtils.showShort("主动连麦");
+                    }
 
-                @Override
-                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                    ToastUtils.showShort(code + " " + reason);
-                }
-            });
+                    @Override
+                    public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                        ToastUtils.showShort(code + " " + reason);
+                    }
+                });
+                break;
+            case UserProperty.jhbRole.AUDIENCE:
+            default:
+                hungUp();
+                setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_cancel, new EduCallback() {
+                    @Override
+                    public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                    }
+
+                    @Override
+                    public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                    }
+                });
+                break;
         }
     }
 
@@ -424,9 +440,9 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         Object type = UserProperty.get(userInfos, UserProperty.applyCall.class, UserProperty.type.class);
         if (UserProperty.type.applyAudio_apply.equals(type) || UserProperty.type.applyVideo_apply.equals(type)) {
             handUpUserId = userInfos.getUserUuid();
-            ToastUtils.showShort("举手 " + userInfos.getUserName() + " " + userInfos.getUserUuid());
+//            ToastUtils.showShort("举手 " + userInfos.getUserName() + " " + userInfos.getUserUuid());
         } else if (UserProperty.type.applyAudio_cancel.equals(type) || UserProperty.type.applyVideo_cancel.equals(type)) {
-            ToastUtils.showShort("取消举手 " + userInfos.getUserName() + " " + userInfos.getUserUuid());
+//            ToastUtils.showShort("取消举手 " + userInfos.getUserName() + " " + userInfos.getUserUuid());
             if (handUpUserId == userInfos.getUserUuid()) {
                 handUpUserId = null;
             }
@@ -464,19 +480,29 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         if (type == null) {
             type = UserProperty.type.applyVideo_cancel;
         }
+        boolean showToast = cause != null;
         switch (type) {
             case UserProperty.type.applyAudio_adminAccept:
             case UserProperty.type.applyVideo_adminAccept:
-                ToastUtils.showShort(R.string.accept_interactive);
+                if (showToast) {
+//                    ToastUtils.showShort(R.string.accept_interactive);
+                }
                 publishStream(getLocalUserInfo());
                 break;
             case UserProperty.type.applyAudio_adminReject:
             case UserProperty.type.applyVideo_adminReject:
-                ToastUtils.showShort(R.string.reject_interactive);
+                if (showToast) {
+                    ToastUtils.showShort(R.string.reject_interactive);
+                }
+                break;
+            case UserProperty.type.applyVideo_cancel:
+                hungUp();
                 break;
             case UserProperty.type.applyAudio_adminHungUp:
             case UserProperty.type.applyVideo_adminHungUp:
-                ToastUtils.showShort(R.string.abort_interactive);
+                if (showToast) {
+                    ToastUtils.showShort(R.string.abort_interactive);
+                }
                 hungUp();
                 break;
         }
