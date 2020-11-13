@@ -8,6 +8,7 @@
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/dp_10"
         android:layout_marginStart="@dimen/dp_10"
         android:textColor="@color/gray_666666"
         android:textSize="@dimen/sp_14"
@@ -45,16 +46,6 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_btn_mute_video"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_btn_hand_up"
-        android:layout_width="@dimen/dp_30"
-        android:layout_height="@dimen/dp_30"
-        android:src="@drawable/ic_hand_up"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btn_mute_chat"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button

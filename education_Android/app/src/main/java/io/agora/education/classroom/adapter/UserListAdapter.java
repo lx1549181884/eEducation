@@ -75,7 +75,7 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
                 break;
             }
         }
-        viewHolder.tv_name.setText(getRole(userInfo) + "\n" + userInfo.getUserName());
+        viewHolder.tv_name.setText(getRole(userInfo) + " " + userInfo.getUserName() + "\n" + getState(userInfo));
         viewHolder.iv_btn_grant_board.setSelected(grantedUuids.contains(userInfo.getUserUuid()));
         viewHolder.iv_btn_mute_audio.setSelected(hasAudio);
         viewHolder.iv_btn_mute_video.setSelected(hasVideo);
@@ -91,24 +91,26 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         viewHolder.iv_btn_mute_video.setVisibility(isLocal ? View.VISIBLE : View.GONE);
 
         viewHolder.btn_mute_chat.setText(userInfo.isChatAllowed() ? "禁言" : "取消禁言");
-        viewHolder.iv_btn_hand_up.setVisibility(getHandUp(userInfo) ? View.VISIBLE : View.GONE);
     }
 
-    private boolean getHandUp(EduUserInfo userInfo) {
-        UserProperty.applyCall applyCall = UserProperty.getProperty(userInfo.getUserProperties(), UserProperty.applyCall.class, null);
-        if (applyCall == null) {
-            return false;
-        } else {
-            switch (applyCall.type) {
+    private String getState(EduUserInfo userInfo) {
+        UserProperty.applyCall property = UserProperty.getProperty(userInfo.getUserProperties(), UserProperty.applyCall.class, null);
+        String state = "在线";
+        if (property != null && property.type != null) {
+            switch (property.type) {
                 case UserProperty.type.applyAudio_apply:
-                case UserProperty.type.applyVideo_apply:
                 case UserProperty.type.applyAudio_adminReceived:
+                case UserProperty.type.applyVideo_apply:
                 case UserProperty.type.applyVideo_adminReceived:
-                    return true;
-                default:
-                    return false;
+                    state = "已举手";
+                    break;
+                case UserProperty.type.applyAudio_adminAccept:
+                case UserProperty.type.applyVideo_adminAccept:
+                    state = "已连麦";
+                    break;
             }
         }
+        return state;
     }
 
     @NotNull
@@ -153,8 +155,6 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         ImageView iv_btn_mute_video;
         @BindView(R.id.btn_mute_chat)
         Button btn_mute_chat;
-        @BindView(R.id.iv_btn_hand_up)
-        ImageView iv_btn_hand_up;
 
         ViewHolder(View itemView) {
             super(itemView);
