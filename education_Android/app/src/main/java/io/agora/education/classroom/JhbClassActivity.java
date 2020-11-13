@@ -115,7 +115,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 new EduCallback<EduStudent>() {
                     @Override
                     public void onSuccess(@org.jetbrains.annotations.Nullable EduStudent res) {
-                        runOnUiThread(() -> onJoinSuccess(roomEntry.getRole()));
+                        runOnUiThread(() -> onJoinSuccess());
                     }
 
                     @Override
@@ -125,11 +125,11 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 }, false);
     }
 
-    private void onJoinSuccess(@UserProperty.jhbRole int jhbRole) {
+    private void onJoinSuccess() {
         showFragmentWithJoinSuccess();
         onRoomPropertyChanged(getMainEduRoom(), null);
         onLocalUserPropertyUpdated(getLocalUserInfo(), null);
-        switch (jhbRole) { // 管理员/主持人/嘉宾主动连麦
+        switch (roomEntry.getRole()) { // 管理员/主持人/嘉宾主动连麦
             case UserProperty.jhbRole.ADMIN:
             case UserProperty.jhbRole.HOST:
             case UserProperty.jhbRole.GUEST:
@@ -180,6 +180,18 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             textView_unRead = findViewById(R.id.textView_unRead);
         }
 
+        boolean showAudienceList;
+        switch (roomEntry.getRole()) {
+            case UserProperty.jhbRole.ADMIN:
+            case UserProperty.jhbRole.HOST:
+                showAudienceList = true;
+                break;
+            default:
+                showAudienceList = false;
+        }
+
+        layout_tab.setVisibility(showAudienceList ? View.VISIBLE : View.GONE);
+
         audienceListFragment = new UserListFragment();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.layout_audience_list, audienceListFragment)
@@ -205,7 +217,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
 
     private void refreshBtnLayout() {
         if (UserProperty.jhbRole.ADMIN == roomEntry.getRole()) {
-            btn_layout_2.setVisibility(View.VISIBLE);
+//            btn_layout_2.setVisibility(View.VISIBLE);
         } else {
             btn_layout_1.setVisibility(View.VISIBLE);
         }
@@ -249,7 +261,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                             localUser.setUserProperty(property, new HashMap<>(), localUser.getUserInfo(), new EduCallback<Unit>() {
                                 @Override
                                 public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
-                                    ToastUtils.showShort("挂断成功");
+//                                    ToastUtils.showShort("挂断成功");
                                 }
 
                                 @Override
