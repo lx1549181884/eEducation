@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.GsonUtils;
+import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.google.android.material.tabs.TabLayout;
@@ -64,7 +65,7 @@ import io.agora.education.lx.UserProperty;
 import io.agora.education.widget.ConfirmDialog;
 import kotlin.Unit;
 
-public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener {
+public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener, KeyboardUtils.OnSoftInputChangedListener {
     private static final String TAG = "JhbClassActivity";
 
     @Nullable
@@ -169,11 +170,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 .show(audienceListFragment)
                 .commitNow();
 
-        if (UserProperty.jhbRole.ADMIN == roomEntry.getRole()) {
-            btn_layout_2.setVisibility(View.VISIBLE);
-        } else {
-            btn_layout_1.setVisibility(View.VISIBLE);
-        }
+        refreshBtnLayout();
 
         // disable operation in large class
         whiteboardFragment.disableDeviceInputs(true);
@@ -185,6 +182,16 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             layout_share_video.setVisibility(View.VISIBLE);
             layout_share_video.removeAllViews();
             renderStream(getMainEduRoom(), streamInfo, layout_share_video);
+        }
+
+        KeyboardUtils.registerSoftInputChangedListener(this, this);
+    }
+
+    private void refreshBtnLayout() {
+        if (UserProperty.jhbRole.ADMIN == roomEntry.getRole()) {
+            btn_layout_2.setVisibility(View.VISIBLE);
+        } else {
+            btn_layout_1.setVisibility(View.VISIBLE);
         }
     }
 
@@ -761,5 +768,21 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 ToastUtils.showShort(code + " " + reason);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        KeyboardUtils.unregisterSoftInputChangedListener(getWindow());
+        super.onDestroy();
+    }
+
+    @Override
+    public void onSoftInputChanged(int height) {
+        if (height == 0) {
+            refreshBtnLayout();
+        } else {
+            btn_layout_1.setVisibility(View.GONE);
+            btn_layout_2.setVisibility(View.GONE);
+        }
     }
 }

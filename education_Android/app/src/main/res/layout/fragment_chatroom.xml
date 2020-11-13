@@ -17,20 +17,34 @@
         android:id="@+id/line"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_1"
-        android:layout_above="@id/edit_send_msg"
+        android:layout_above="@id/ll_input"
         android:background="@color/gray_DBE2E5" />
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/edit_send_msg"
+    <LinearLayout
+        android:id="@+id/ll_input"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_34"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="@dimen/dp_10"
-        android:background="@drawable/bg_chat_edit"
-        android:hint="@string/hint_im_message"
-        android:imeOptions="actionSend"
-        android:paddingStart="@dimen/dp_13"
-        android:paddingEnd="@dimen/dp_13" />
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/edit_send_msg"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp_34"
+            android:layout_margin="@dimen/dp_10"
+            android:layout_weight="1"
+            android:background="@drawable/bg_chat_edit"
+            android:hint="@string/hint_im_message"
+            android:paddingStart="@dimen/dp_13"
+            android:paddingEnd="@dimen/dp_13" />
+
+        <Button
+            android:id="@+id/btn_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送" />
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/layout_empty"

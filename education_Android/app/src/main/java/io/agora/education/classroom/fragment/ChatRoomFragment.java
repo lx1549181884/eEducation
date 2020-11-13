@@ -2,7 +2,6 @@ package io.agora.education.classroom.fragment;
 
 import android.content.Intent;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 
@@ -18,9 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 import io.agora.base.ToastManager;
 import io.agora.base.network.RetrofitManager;
-import io.agora.education.BuildConfig;
 import io.agora.education.EduApplication;
 import io.agora.education.R;
 import io.agora.education.api.EduCallback;
@@ -38,7 +37,7 @@ import io.agora.education.service.bean.response.RecordRes;
 
 import static io.agora.education.api.BuildConfig.API_BASE_URL;
 
-public class ChatRoomFragment extends BaseFragment implements OnItemChildClickListener, View.OnKeyListener {
+public class ChatRoomFragment extends BaseFragment implements OnItemChildClickListener {
     public static final String TAG = ChatRoomFragment.class.getSimpleName();
 
     @BindView(R.id.rcv_msg)
@@ -67,7 +66,6 @@ public class ChatRoomFragment extends BaseFragment implements OnItemChildClickLi
         layoutManager.setStackFromEnd(true);
         rcv_msg.setLayoutManager(layoutManager);
         rcv_msg.setAdapter(adapter);
-        edit_send_msg.setOnKeyListener(this);
         setEditTextEnable(!(this.isMuteAll));
     }
 
@@ -169,13 +167,13 @@ public class ChatRoomFragment extends BaseFragment implements OnItemChildClickLi
                 }));
     }
 
-    @Override
-    public boolean onKey(View view, int keyCode, KeyEvent event) {
+    @OnClick(R.id.btn_send)
+    void send() {
         if (!edit_send_msg.isEnabled()) {
-            return false;
+            return;
         }
         String text = edit_send_msg.getText().toString();
-        if (KeyEvent.KEYCODE_ENTER == keyCode && KeyEvent.ACTION_DOWN == event.getAction() && text.trim().length() > 0) {
+        if (text.trim().length() > 0) {
             if (context instanceof BaseClassActivity) {
                 edit_send_msg.setText("");
                 BaseClassActivity activity = (BaseClassActivity) getActivity();
@@ -194,9 +192,6 @@ public class ChatRoomFragment extends BaseFragment implements OnItemChildClickLi
                     }
                 });
             }
-            return true;
         }
-        return false;
     }
-
 }
