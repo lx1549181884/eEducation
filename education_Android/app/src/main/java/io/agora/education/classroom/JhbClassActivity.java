@@ -16,6 +16,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.google.android.material.tabs.TabLayout;
@@ -57,8 +58,10 @@ import io.agora.education.classroom.bean.channel.Room;
 import io.agora.education.classroom.fragment.UserListFragment;
 import io.agora.education.classroom.widget.RtcVideoView;
 import io.agora.education.lx.LogUtil;
+import io.agora.education.lx.Msg;
 import io.agora.education.lx.RoomProperty;
 import io.agora.education.lx.UserProperty;
+import io.agora.education.widget.ConfirmDialog;
 import kotlin.Unit;
 
 public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener {
@@ -467,6 +470,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             case UserProperty.type.applyAudio_adminHungUp:
             case UserProperty.type.applyVideo_adminHungUp:
                 ToastUtils.showShort(R.string.abort_interactive);
+                hungUp();
                 break;
         }
     }
@@ -504,6 +508,50 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     public void onUserMessageReceived(@NotNull EduMsg message) {
         super.onUserMessageReceived(message);
+        try {
+            switch (GsonUtils.fromJson(message.getMessage(), Msg.class).data.type) {
+                case Msg.Type.adminInvite_audioLink:
+                    runOnUiThread(() -> ConfirmDialog.normalWithButton("主播邀请连麦", "拒绝", "同意", confirm -> {
+                        if (confirm) {
+                            setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
+                                @Override
+                                public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                                    publishStream(getLocalUserInfo());
+                                    getMainEduRoom().getLocalUser().sendUserMessage(GsonUtils.toJson(new Msg(Msg.Type.adminInvite_audioLink_audienceAccept)), message.getFromUser(), new EduCallback<EduMsg>() {
+                                        @Override
+                                        public void onSuccess(@org.jetbrains.annotations.Nullable EduMsg res) {
+                                        }
+
+                                        @Override
+                                        public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+
+                                }
+                            });
+                        } else {
+                            getMainEduRoom().getLocalUser().sendUserMessage(GsonUtils.toJson(new Msg(Msg.Type.adminInvite_audioLink_audienceReject)), message.getFromUser(), new EduCallback<EduMsg>() {
+                                @Override
+                                public void onSuccess(@org.jetbrains.annotations.Nullable EduMsg res) {
+                                }
+
+                                @Override
+                                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+
+                                }
+                            });
+                        }
+                    }).showNow(getSupportFragmentManager(), null));
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -539,24 +587,24 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                     getLocalUser().subscribeStream(info, new StreamSubscribeOptions(true, true, VideoStreamType.HIGH), new EduCallback<Unit>() {
                         @Override
                         public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
-
+                            LogUtil.log("subscribeStream", "onSuccess", info.getPublisher().getUserName(), res);
                         }
 
                         @Override
                         public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-
+                            LogUtil.log("subscribeStream", "onFailure", info.getPublisher().getUserName(), reason);
                         }
                     });
                 } else {
                     getLocalUser().unSubscribeStream(info, new StreamSubscribeOptions(false, false, VideoStreamType.HIGH), new EduCallback<Unit>() {
                         @Override
                         public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
-
+                            LogUtil.log("unSubscribeStream", "onSuccess", info.getPublisher().getUserName(), res);
                         }
 
                         @Override
                         public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-
+                            LogUtil.log("unSubscribeStream", "onFailure", info.getPublisher().getUserName(), reason);
                         }
                     });
                 }

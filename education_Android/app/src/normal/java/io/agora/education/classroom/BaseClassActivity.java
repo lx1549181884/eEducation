@@ -725,7 +725,7 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
 
     @Override
     public void onLocalUserPropertyUpdated(@NotNull EduUserInfo userInfo, @Nullable Map<String, Object> cause) {
-
+        LogUtil.log("onLocalUserPropertyUpdated", userInfo.getUserProperties());
     }
 
     @Override
@@ -779,17 +779,17 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
      */
     @Override
     public void onUserMessageReceived(@NotNull EduMsg message) {
-
+        LogUtil.log("onUserMessageReceived", message);
     }
 
     @Override
     public void onUserChatMessageReceived(@NotNull EduChatMsg chatMsg) {
-
+        LogUtil.log("onUserChatMessageReceived", chatMsg);
     }
 
     @Override
     public void onUserActionMessageReceived(@NotNull EduActionMessage actionMessage) {
-
+        LogUtil.log("onUserActionMessageReceived", actionMessage);
     }
 
     private boolean followTips = false;
