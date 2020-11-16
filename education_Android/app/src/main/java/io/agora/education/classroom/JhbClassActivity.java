@@ -126,6 +126,16 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     private void onJoinSuccess() {
+        boolean showAudienceList;
+        switch (roomEntry.getRole()) {
+            case UserProperty.jhbRole.ADMIN:
+            case UserProperty.jhbRole.HOST:
+                showAudienceList = true;
+                break;
+            default:
+                showAudienceList = false;
+        }
+        layout_tab.setVisibility(showAudienceList ? View.VISIBLE : View.GONE);
         showFragmentWithJoinSuccess();
         onRoomPropertyChanged(getMainEduRoom(), null);
         onLocalUserPropertyUpdated(getLocalUserInfo(), null);
@@ -179,18 +189,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             layout_unRead = findViewById(R.id.layout_unRead);
             textView_unRead = findViewById(R.id.textView_unRead);
         }
-
-        boolean showAudienceList;
-        switch (roomEntry.getRole()) {
-            case UserProperty.jhbRole.ADMIN:
-            case UserProperty.jhbRole.HOST:
-                showAudienceList = true;
-                break;
-            default:
-                showAudienceList = false;
-        }
-
-        layout_tab.setVisibility(showAudienceList ? View.VISIBLE : View.GONE);
 
         audienceListFragment = new UserListFragment();
         getSupportFragmentManager().beginTransaction()

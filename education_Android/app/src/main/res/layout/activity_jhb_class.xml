@@ -52,6 +52,7 @@
         android:id="@+id/layout_tab"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_44"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/ll_videos"
         app:tabGravity="fill"
         app:tabIndicatorColor="@color/blue_44A2FC"
