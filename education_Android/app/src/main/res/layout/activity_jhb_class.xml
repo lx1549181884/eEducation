@@ -48,6 +48,14 @@
         </RelativeLayout>
     </LinearLayout>
 
+    <Button
+        android:id="@+id/btn_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="切换至本地画面"
+        app:layout_constraintBottom_toBottomOf="@id/ll_videos"
+        app:layout_constraintRight_toRightOf="@id/ll_videos" />
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/layout_tab"
         android:layout_width="match_parent"

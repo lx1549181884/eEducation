@@ -652,20 +652,29 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                     });
                 }
             }
+            int cmd = liveConfig.cmd;
 
+            if (!showLiveVideo) {
+                finalList.clear();
+                EduStreamInfo localCameraStream = getLocalCameraStream();
+                if (localCameraStream != null) {
+                    finalList.add(localCameraStream);
+                }
+                cmd = RoomProperty.liveConfig.CMD.CMD_1;
+            }
 
-            switch (liveConfig.cmd) {
+            switch (cmd) {
                 case RoomProperty.liveConfig.CMD.CMD_1:
                 case RoomProperty.liveConfig.CMD.CMD_2:
                     rv_videos.setVisibility(View.GONE);
                     rl_videos2.setVisibility(View.VISIBLE);
-                    rvv_small.setViewVisibility(liveConfig.cmd == RoomProperty.liveConfig.CMD.CMD_1 ? View.GONE : View.VISIBLE);
+                    rvv_small.setViewVisibility(cmd == RoomProperty.liveConfig.CMD.CMD_1 ? View.GONE : View.VISIBLE);
                     adapter.setNewList(new ArrayList<>());
                     for (int i = 0; i < finalList.size(); i++) {
                         EduStreamInfo info = finalList.get(i);
                         if (i == 0) {
                             renderStream(getMainEduRoom(), info, rvv_large);
-                        } else if (i == 1 && RoomProperty.liveConfig.CMD.CMD_2 == liveConfig.cmd) {
+                        } else if (i == 1 && RoomProperty.liveConfig.CMD.CMD_2 == cmd) {
                             renderStream(getMainEduRoom(), info, rvv_small);
                         }
                     }
@@ -820,5 +829,17 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             btn_layout_1.setVisibility(View.GONE);
             btn_layout_2.setVisibility(View.GONE);
         }
+    }
+
+    @BindView(R.id.btn_switch)
+    Button btn_switch;
+
+    boolean showLiveVideo = true;
+
+    @OnClick(R.id.btn_switch)
+    void switchVideo() {
+        showLiveVideo = !showLiveVideo;
+        btn_switch.setText(showLiveVideo ? "切换至本地画面" : "切换至直播画面");
+        refreshVideoList();
     }
 }
