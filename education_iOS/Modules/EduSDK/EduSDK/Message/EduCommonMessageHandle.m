@@ -71,9 +71,9 @@
     EduActionMessage *actionMessage = [EduActionMessage new];
     [actionMessage yy_modelSetWithJSON:obj];
 
-    if ([self.agoraDelegate respondsToSelector:@selector(userActionMessageReceived:)]) {
-        [self.agoraDelegate userActionMessageReceived:actionMessage];
-    }
+//    if ([self.agoraDelegate respondsToSelector:@selector(userActionMessageReceived:)]) {
+//        [self.agoraDelegate userActionMessageReceived:actionMessage];
+//    }
 }
 
 - (void)messagePeerExtention:(EduPeerMessageModel *)msgModel {

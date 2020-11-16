@@ -61,7 +61,7 @@
 #define HTTP_ROOM_PROPERTIES @"%@/apps/%@/v1/rooms/%@/properties/%@"
 
 // apps/{appId}/v1/rooms/{roomUuid}/users/{userUuid}/properties/{key}
-#define HTTP_USER_PROPERTIES @"%@/apps/%@/v1/rooms/%@/users%@/properties/%@"
+#define HTTP_USER_PROPERTIES @"%@/apps/%@/v1/rooms/%@/users/%@/properties/%@"
 
 // /apps/{appId}/v1/rooms/{roomUuid}/users/{userUuid}/exit
 #define HTTP_LEAVE_ROOM @"%@/apps/%@/v1/rooms/%@/users/%@/exit"

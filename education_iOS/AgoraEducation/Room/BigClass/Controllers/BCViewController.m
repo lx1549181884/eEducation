@@ -133,7 +133,7 @@
 }
 - (void)removeRoleCanvas:(EduStream *)stream {
     [AgoraEduManager.shareManager.studentService setStreamView:nil stream:stream];
-    
+
     if (stream.userInfo.role == EduRoleTypeTeacher) {
         if (stream.sourceType == EduVideoSourceTypeScreen) {
             self.shareScreenView.hidden = YES;
@@ -513,7 +513,7 @@
 
 #pragma mark EduStudentDelegate
 - (void)localUserStateUpdated:(EduUserEvent*)event changeType:(EduUserStateChangeType)changeType {
-    [self updateRoleViews:event.modifiedUser];
+    [self updateChatViews];
 }
 - (void)localStreamAdded:(EduStreamEvent*)event {
     [self updateRoleCanvas:event.modifiedStream];

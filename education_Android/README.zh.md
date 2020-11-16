@@ -4,7 +4,7 @@
 
 ## 前提条件
 
-- 准备工作：请确保你已经完成 [Agora e-Education 项目指南](https://github.com/AgoraIO-Usecase/eEducation/blob/master/README.zh.md)中的准备工作。
+- 准备工作：请确保你已经完成 [e-Education 项目指南](../README.zh.md)中的准备工作。
 - 开发环境：
   - JDK
   - Android Studio 2.0  及以上
@@ -33,16 +33,18 @@ cd eEducation/education_Android/
 在 `app/src/main/res/values/string_configs.xml` 文件中配置以下字段：
 - 你获取到的声网 App ID。
 - 你获取到的声网 Customer ID。
-- 你获取到的声网 Customer Certificate。
+- 你获取到的声网 Customer 密钥。
 - 你获取到的白板 AppIdentifier。
 
 ```
 <string name="agora_app_id" translatable="false">Your AppId</string>
 <string name="agora_customer_id" translatable="false">Your customerId</string>
 <string name="agora_customer_cer" translatable="false">Your customerCer</string>
+
+<string name="whiteboard_app_id" translatable="false">Your whiteboard appId</string>
 ```
 
-详见 Agora e-Education 项目指南中的[前提条件](https://github.com/AgoraIO-Usecase/eEducation/blob/master/README.zh.md#%E5%89%8D%E6%8F%90%E6%9D%A1%E4%BB%B6)。
+详见 Agora e-Education 项目指南中的[前提条件](../README.zh.md#prerequisites)。
 
 **5. 运行项目**
 

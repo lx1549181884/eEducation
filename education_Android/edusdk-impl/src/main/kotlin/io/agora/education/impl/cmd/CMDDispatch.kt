@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.agora.Constants.Companion.AgoraLog
+import io.agora.education.impl.util.Convert
 import io.agora.education.api.manager.listener.EduManagerEventListener
 import io.agora.education.api.message.EduChatMsg
 import io.agora.education.api.room.EduRoom
@@ -14,9 +15,7 @@ import io.agora.education.api.user.data.EduUserEvent
 import io.agora.education.api.user.data.EduUserStateChangeType.Chat
 import io.agora.education.impl.cmd.bean.*
 import io.agora.education.impl.room.EduRoomImpl
-import io.agora.education.impl.util.Convert
 import io.agora.rte.RteEngineImpl
-import org.json.JSONObject
 
 
 internal class CMDDispatch(private val eduRoom: EduRoom) {
@@ -175,24 +174,25 @@ internal class CMDDispatch(private val eduRoom: EduRoom) {
                 }
             }
             CMDId.UserStateChange.value -> {
-                val jsonObject = JSONObject(text)
-                jsonObject.getJSONObject("data").put("updateTime", jsonObject.getLong("timestamp"))
-                val cmdUserStateMsg = Gson().fromJson<CMDResponseBody<CMDUserStateMsg>>(jsonObject.toString(), object :
+                val cmdUserStateMsg = Gson().fromJson<CMDResponseBody<CMDUserStateMsg>>(text, object :
                         TypeToken<CMDResponseBody<CMDUserStateMsg>>() {}.type).data
                 val changeEvents = CMDDataMergeProcessor.updateUserWithUserStateChange(cmdUserStateMsg,
                         (eduRoom as EduRoomImpl).getCurUserList(), eduRoom.getCurRoomType())
-                changeEvents?.forEach {
-                    val event = it.event
-                    /**判断有效的数据中是否有本地用户的数据,有则处理并回调*/
+                /**判断有效的数据中是否有本地用户的数据,有则处理并回调*/
+                val iterable = changeEvents.iterator()
+                while (iterable.hasNext()) {
+                    val element = iterable.next()
+                    val event = element.event
                     if (event.modifiedUser.userUuid == eduRoom.getLocalUser().userInfo.userUuid) {
-                        Log.e(TAG, "onLocalUserUpdated")
-                        val eduUser = eduRoom.getLocalUser()
+                        Log.e(TAG, "onLocalUserUpdated:${event.modifiedUser.userUuid}")
                         cmdCallbackManager.onLocalUserUpdated(EduUserEvent(event.modifiedUser,
-                                event.operatorUser), it.type, eduUser)
-                    } else {
-                        Log.e(TAG, "onRemoteUserUpdated")
-                        cmdCallbackManager.onRemoteUserUpdated(event, Chat, eduRoom)
+                                event.operatorUser), element.type, eduRoom.getLocalUser())
+                        iterable.remove()
                     }
+                }
+                /**把剩余的远端数据回调出去*/
+                changeEvents?.forEach {
+                    cmdCallbackManager.onRemoteUserUpdated(it.event, it.type, eduRoom)
                 }
             }
             CMDId.UserPropertiedChanged.value -> {

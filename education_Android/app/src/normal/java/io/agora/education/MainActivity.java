@@ -64,7 +64,6 @@ import static io.agora.education.classroom.BaseClassActivity.RESULT_CODE;
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
 
-    private final int REQUEST_CODE_DOWNLOAD = 100;
     private final int REQUEST_CODE_RTC = 101;
     public final static int REQUEST_CODE_RTE = 909;
     public static final String CODE = "code";
@@ -82,8 +81,6 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.rg_role)
     protected RadioGroup rg_role;
 
-    private DownloadReceiver receiver;
-    private CommonService commonService;
     private String url;
 
     @Override
@@ -93,14 +90,6 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        receiver = new DownloadReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        filter.setPriority(IntentFilter.SYSTEM_LOW_PRIORITY);
-        registerReceiver(receiver, filter);
-
-        commonService = RetrofitManager.instance().getService(API_BASE_URL, CommonService.class);
-        checkVersion();
     }
 
     @Override
@@ -115,12 +104,6 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        unregisterReceiver(receiver);
-        super.onDestroy();
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         for (int result : grantResults) {
@@ -130,9 +113,6 @@ public class MainActivity extends BaseActivity {
             }
         }
         switch (requestCode) {
-            case REQUEST_CODE_DOWNLOAD:
-                receiver.downloadApk(this, url);
-                break;
             case REQUEST_CODE_RTC:
                 start();
                 break;
@@ -200,37 +180,6 @@ public class MainActivity extends BaseActivity {
                 card_room_type.setVisibility(View.GONE);
             }
         }
-    }
-
-
-    private void checkVersion() {
-        commonService.appVersion().enqueue(new BaseCallback<>(data -> {
-            if (data != null && data.forcedUpgrade != 0) {
-                showAppUpgradeDialog(data.upgradeUrl, data.forcedUpgrade == 2);
-            }
-        }));
-    }
-
-    private void showAppUpgradeDialog(String url, boolean isForce) {
-        this.url = url;
-        String content = getString(R.string.app_upgrade);
-        ConfirmDialog.DialogClickListener listener = confirm -> {
-            if (confirm) {
-                if (AppUtil.checkAndRequestAppPermission(MainActivity.this, new String[]{
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, REQUEST_CODE_DOWNLOAD)) {
-                    receiver.downloadApk(MainActivity.this, url);
-                }
-            }
-        };
-        ConfirmDialog dialog;
-        if (isForce) {
-            dialog = ConfirmDialog.singleWithButton(content, getString(R.string.upgrade), listener);
-            dialog.setCancelable(false);
-        } else {
-            dialog = ConfirmDialog.normalWithButton(content, getString(R.string.later), getString(R.string.upgrade), listener);
-        }
-        dialog.show(getSupportFragmentManager(), null);
     }
 
     private void start() {

@@ -198,15 +198,23 @@
     WEAK(self);
     [AgoraEduManager.shareManager.roomManager getClassroomInfoWithSuccess:^(EduClassroom * _Nonnull room) {
         
-        BOOL muteChat = !room.roomState.isStudentChatAllowed;
-        if(!muteChat) {
-            BOOL muteChat = !weakself.localUser.isChatAllowed;
-            chatTextFiled.contentTextFiled.enabled = muteChat ? NO : YES;
-            chatTextFiled.contentTextFiled.placeholder = muteChat ? NSLocalizedString(@"ProhibitedPostText", nil) : NSLocalizedString(@"InputMessageText", nil);
-        } else {
-            chatTextFiled.contentTextFiled.enabled = muteChat ? NO : YES;
-            chatTextFiled.contentTextFiled.placeholder = muteChat ? NSLocalizedString(@"ProhibitedPostText", nil) : NSLocalizedString(@"InputMessageText", nil);
-        }
+        [AgoraEduManager.shareManager.roomManager getLocalUserWithSuccess:^(EduLocalUser * _Nonnull user) {
+            weakself.localUser = user;
+            
+            BOOL muteChat = !room.roomState.isStudentChatAllowed;
+            if(!muteChat) {
+                BOOL muteChat = !weakself.localUser.isChatAllowed;
+                chatTextFiled.contentTextFiled.enabled = muteChat ? NO : YES;
+                chatTextFiled.contentTextFiled.placeholder = muteChat ? NSLocalizedString(@"ProhibitedPostText", nil) : NSLocalizedString(@"InputMessageText", nil);
+            } else {
+                chatTextFiled.contentTextFiled.enabled = muteChat ? NO : YES;
+                chatTextFiled.contentTextFiled.placeholder = muteChat ? NSLocalizedString(@"ProhibitedPostText", nil) : NSLocalizedString(@"InputMessageText", nil);
+            }
+
+        } failure:^(NSError * error) {
+            [weakself showToast:error.description];
+        }];
+        
     } failure:^(NSError * error) {
         [weakself showToast:error.description];
     }];

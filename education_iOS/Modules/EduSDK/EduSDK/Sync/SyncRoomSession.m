@@ -213,11 +213,14 @@ static dispatch_queue_t AgoraAsyncGetReleaseQueue() {
             return;
         }
         
-        id originalRoom = [self.room yy_modelCopy];
+        BaseSnapshotRoomModel *n_room = [self.roomClass new];
+        id originalRoom = [self.room yy_modelToJSONObject];
+        [n_room yy_modelSetWithJSON:originalRoom];
+        
         self.room = room;
         if ([self.delegate respondsToSelector:@selector(onRoomUpdateFrom:to:cause:)]) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self.delegate onRoomUpdateFrom:originalRoom to:self.room cause:cause];
+                [self.delegate onRoomUpdateFrom:n_room to:self.room cause:cause];
             });
         }
         [self checkCacheRoomSession];
@@ -301,11 +304,16 @@ static dispatch_queue_t AgoraAsyncGetReleaseQueue() {
                     }
                 } else if (userModel.state == 1) {
                     // update
-                    id originalObj = [filterUser yy_modelCopy];
+                    BaseSnapshotUserModel *originalObj = [self.userClass new];
+                    id obj = [filterUser yy_modelToJSONObject];
+                    [originalObj yy_modelSetWithJSON:obj];
+                    
                     id userObj = [userModel yy_modelToJSONObject];
                     [filterUser yy_modelSetWithJSON:userObj];
 
                     if([userModel.userUuid isEqualToString:self.userUuid]) {
+                        
+                        [self.localUser yy_modelSetWithJSON: userObj];
                         if ([self.delegate respondsToSelector:@selector(onLocalUserUpdateFrom:to:)]) {
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 [self.delegate onLocalUserUpdateFrom:originalObj to:filterUser];
@@ -431,7 +439,10 @@ static dispatch_queue_t AgoraAsyncGetReleaseQueue() {
 
                 } else if (streamModel.state == 1) {
                     // update
-                    id originalObj = [filterStream yy_modelCopy];
+                    BaseSnapshotUserModel *originalObj = [self.streamClass new];
+                    id obj = [filterStream yy_modelToJSONObject];
+                    [originalObj yy_modelSetWithJSON:obj];
+
                     id streamObj = [streamModel yy_modelToJSONObject];
                     [filterStream yy_modelSetWithJSON:streamObj];
 

@@ -48,10 +48,6 @@ typedef void(^OnUserMediaChangedSuccessBlock)(EduStream *stream);
 - (void)sendRoomChatMessageWithText:(NSString*)text success:(EduSuccessBlock)successBlock failure:(EduFailureBlock _Nullable)failureBlock;
 - (void)sendUserChatMessageWithText:(NSString*)text remoteUser:(EduUser *)remoteUser success:(EduSuccessBlock)successBlock failure:(EduFailureBlock _Nullable)failureBlock;
 
-// process action
-- (void)startActionWithConfig:(EduStartActionConfig *)config success:(EduSuccessBlock)successBlock failure:(EduFailureBlock _Nullable)failureBlock;
-- (void)stopActionWithConfig:(EduStopActionConfig *)config success:(EduSuccessBlock)successBlock failure:(EduFailureBlock _Nullable)failureBlock;
-
 // property
 - (void)setRoomPropertyWithKey:(NSString*)key value:(NSString * _Nullable)value cause:(EduObject * _Nullable)cause success:(EduSuccessBlock)successBlock failure:(EduFailureBlock _Nullable)failureBlock;
 - (void)setUserPropertyWithKey:(NSString*)key value:(NSString * _Nullable)value cause:(EduObject * _Nullable)cause user:(EduUser *)targetUser success:(EduSuccessBlock)successBlock failure:(EduFailureBlock _Nullable)failureBlock;

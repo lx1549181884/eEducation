@@ -11,10 +11,31 @@
 #import "EduUser+ConvenientInit.h"
 
 @implementation EduSyncUserModel
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.isChatAllowed = YES;
+    }
+    return self;
+}
+
 + (NSDictionary *)modelContainerPropertyGenericClass {
     return @{
         @"streams" : [EduSyncStreamModel class]
     };
+}
+
+- (BOOL)modelCustomTransformFromDictionary:(NSDictionary *)dic {
+    
+    NSNumber *muteChat = dic[@"muteChat"];
+    if ([muteChat isKindOfClass:[NSNumber class]]) {
+        _isChatAllowed = !muteChat.boolValue;
+        return YES;
+    }
+   
+    return NO;
 }
 
 - (EduUser *)mapEduUser {

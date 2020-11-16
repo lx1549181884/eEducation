@@ -427,10 +427,10 @@ typedef NS_ENUM(NSUInteger, StreamState) {
     }
     
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
-    if(!value) {
+    if(value != nil) {
         param[@"value"] = value;
     }
-    if(!cause) {
+    if(cause != nil) {
         param[@"cause"] = cause;
     }
     [HttpManager roomPropertiesWithRoomUuid:self.channelId userToken:self.userToken key:key param:param apiVersion:APIVersion1 analysisClass:CommonModel.class success:^(id<BaseModel>  _Nonnull objModel) {
@@ -459,10 +459,10 @@ typedef NS_ENUM(NSUInteger, StreamState) {
     }
     
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
-    if(!value) {
+    if(value != nil) {
         param[@"value"] = value;
     }
-    if(!cause) {
+    if(cause != nil) {
         param[@"cause"] = cause;
     }
 

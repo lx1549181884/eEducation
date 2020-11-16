@@ -426,7 +426,7 @@
 
 #pragma mark EduStudentDelegate
 - (void)localUserStateUpdated:(EduUserEvent*)event changeType:(EduUserStateChangeType)changeType {
-    [self updateRoleViews:@[event.modifiedUser]];
+    [self updateChatViews];
 }
 - (void)localStreamAdded:(EduStreamEvent*)event {
     [self updateRoleCanvas:@[event.modifiedStream]];

@@ -2,9 +2,9 @@
 
 This page introduces how to run the Android sample project.
 
-## Prerequisites 
+## Prerequisites
 
-- Make sure you have made the preparations mentioned in the [Agora e-Education Guide](https://github.com/AgoraIO-Usecase/eEducation).
+- Make sure you have made the preparations mentioned in the [Agora e-Education Guide](../README.md#prerequisites).
 - Prepare the development environment:
   - JDK
   - Android Studio 2.0  or later
@@ -33,16 +33,17 @@ cd eEducation/education_Android/
 Pass the following parameters in `app/src/main/res/values/string_configs.xml`:
 - The Agora App ID that you get.
 - The Agora Customer ID that you get.
-- The Agora Customer Certificate that you get.
-- The WhiteBoard AppIdentifier that you get.
+- The Agora Customer Secret that you get.
+- The Netless AppIdentifier that you get.
 
 ```
 <string name="agora_app_id" translatable="false">Your AppId</string>
 <string name="agora_customer_id" translatable="false">Your customerId</string>
 <string name="agora_customer_cer" translatable="false">Your customerCer</string>
+<string name="whiteboard_app_id" translatable="false">Your whiteboard appId</string>
 ```
 
-For details, see the [prerequisites](https://github.com/AgoraIO-Usecase/eEducation/blob/master/README.md#prerequisites) in Agora E-education Guide.
+For details, see the [prerequisites](../README.md#prerequisites) in Agora E-education Guide.
 
 **5.Run the project.**
 

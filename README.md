@@ -2,6 +2,19 @@ _其他语言版本_: [简体中文](README.zh.md)
 
 > This page introduces how to use eEducation 6.0.0. Please note that eEducation is not backward compatible. If you use eEducation 5.0.0, please refer to [eEducation 5.0.0 Project Guide](https://github.com/AgoraIO-Usecase/eEducation/wiki/eEducation-5.0.0-Project-Guide).
 
+## Table of contents
+
+* [About the project](#overview)
+  * [Applicable scenarios](#scene)
+  * [Platform compatibility](#platform)
+  * [Functions](#function)
+  * [Restrictions](#restriction)
+* [Get started](#start)
+  * [Prerequisites](#prerequisites)
+  * [Run the sample project](#run)
+* [Agora Edu Cloud Service](#edu-cloud-service)
+* [FAQ](#faq)
+
 ## <a name="overview"></a>About the project
 eEducation is a sample project provided by Agora for developers in the education industry, which demonstrates how to use **[Agora Edu Cloud Service](https://agoradoc.github.io/cn/edu-cloud-service/restfulapi/)**, **Agora RTC SDK**, **Agora RTM SDK**, **Agora Cloud Recording**, and the third-party **Netless whiteboard SDK** to quickly implement basic online interactive tutoring scenarios.
 
@@ -18,7 +31,7 @@ eEducation supports the following platforms and versions:
 
 * iOS 10 or later. We do not test Agora e-Education on iOS 9 updates.
 * Android 4.4 and later.
-* Web Chrome 72 and later. We do not test Agora e-Education on browsers.
+* Web Chrome 72 and later. We do not test Agora e-Education on other browsers.
 
 ### <a name="function"></a>Functions
 | Function                                                     | iOS and Android (Student)                                    | Web (Teacher) | Web (Student)                                                | Web (TA) | Note                                                         |
@@ -34,44 +47,44 @@ eEducation supports the following platforms and versions:
 
 ### <a name="restriction"></a>Restrictions
 eEducation currently has the following restrictions:
-1. **Integrate Agora Cloud Recording **: The cloud recording in this sample project is only for demonstration. If you need to officially use the cloud recording function in your project, please see [Cloud Recording Quick Start](https://docs.agora.io/en/cloud-recording/cloud_recording_rest?platform=All%20Platforms) to enable Agora Cloud Recording.
-2: **Only supports Alibaba and Qiniu Cloud OSS**: Temporarily, this sample project only supports the Object Storage Service (OSS) of Alibaba Cloud and Qiniu Cloud. For details, see [Alibaba Cloud OSS Configuration Guide](https://github.com/AgoraIO-Usecase/eEducation/wiki/Alibaba-Cloud-OSS-Guide).
-3. **Whiteboard courseware management**: In this sample project, we deploy the courseware management on the front end and upload courseware using `accessKey` and `secretKey`. However, this is not a best practice and may cause security issues. We suggest you implement the course management system on the back end and upload courseware in advance. So the web client only needs to read the courseware before the class.
+1. **Integrate Agora Cloud Recording**: The cloud recording in this sample project is only for demonstration. If you need to officially use the cloud recording function in your project, please see [Cloud Recording Quick Start](https://docs.agora.io/en/cloud-recording/cloud_recording_rest?platform=All%20Platforms) to enable Agora Cloud Recording.
+2. **Only supports Alibaba and Qiniu Cloud OSS**: Temporarily, this sample project only supports the Object Storage Service (OSS) of Alibaba Cloud and Qiniu Cloud. For details, see [Alibaba Cloud OSS Configuration Guide](https://github.com/AgoraIO-Usecase/eEducation/wiki/Alibaba-Cloud-OSS-Guide).
+3. **Whiteboard courseware management**: In this sample project, we deploy the courseware management on the front end and upload courseware using `accessKey` and `secretKey`. However, this is not a best practice and may cause security issues. We suggest you implement the course management system on the back end and upload courseware in advance, so the web client only needs to read the courseware before the class.
 4. **Fails to update the user states immediately after a user in the classroom drops offline**: This sample project does not implement a course management system and uses the Agora RTM SDK for querying the number of online users. If a user in the classroom drops offline, RTM cannot get the user states immediately. Generally, it takes about 30 seconds for RTM to update the user states. You can resolve this problem by implementing your own course management system.
-5. **Connect with your own business logic**: The functions of the Agora Edu Cloud Service cannot be directly extended. However, we provide the `userUuid` and `roomUuid` parameters for you to connect the Agora Edu Cloud Service with your own user management system and course management system. 
+5. **Connect with your own business logic**: The functions of the Agora Edu Cloud Service cannot be directly extended. However, we provide the `userUuid` and `roomUuid` parameters for you to connect the Agora Edu Cloud Service with your own user management system and course management system.
 6. **Concurrent channel restrictions**: At present, each appid can have up to 200 channels at the same time. If you need to continue more, please contact us.
 7. **Wait 5 minutes**: After the AppId is created, you need to wait for 5 minutes to complete the follow-up process. This step is to wait for the background data synchronization to complete.
 
-## <a name="strat"></a>Get started  
-### <a name="prerequisites"></a>Prerequisites  
+## <a name="start"></a>Get started
+### <a name="prerequisites"></a>Prerequisites
 Make sure you make the following preparations before compiling and running the sample project.
 
-### Get an Agora App ID  
-Follow these steps to get an Agora App ID:  
+### Get an Agora App ID
+Follow these steps to get an Agora App ID:
 
-1. Create an account in [Agora Console](https://console.agora.io/).  
-2. Log in to Agora Console and create a project. Select **"App ID + App Certificate + Token"** as your authentication mechanism when creating the project. Make sure that you enable the [App Certificate](https://docs.agora.io/en/Agora%20Platform/token?platform=All%20Platforms#appcertificate) of this project.  
-3. Get the App ID of this project in **Project Management page**.  
+1. Create an account in [Agora Console](https://console.agora.io/).
+2. Log in to Agora Console and create a project. Select **"App ID + App Certificate + Token"** as your authentication mechanism when creating the project. Make sure that you enable the [App Certificate](https://docs.agora.io/en/Agora%20Platform/token?platform=All%20Platforms#appcertificate) of this project.
+3. Get the App ID of this project in **Project Management page**.
 
 ### Get the Agora Customer ID and Customer Secret
 1. Log in to the [Agora console](https://console.agora.io/), click the username in the upper right corner of the page, and open the RESTful API page in the drop-down list.
-2. Click download to get the customer ID (customerId) and customer secret (customerSecret).
+2. Click **download** to get the customer ID (customerId) and customer secret (customerSecret).
 
-### Get a Netless appidentifier and sdktoken, and register the sdktoken with Agora cloud service and register it in Agora Edu Cloud Service
-1. Log in to the [Netless console](https://console.herewhite.com/), click the application management button on the left navigation bar to create or directly configure existing applications, obtain appidentifier, and then click generate sdktoken, and then copy this sdktoken.
-2. Log in to the [Agora console](https://console.agora.io/), click the project management button in the left navigation bar, then click the edit button, click updateToken, and then copy the whiteboard sdkToken you get in the previous step into the pop-up dialog box.
+### Get a Netless app identifier and sdk token, and register the netless sdk token in Agora Edu Cloud Service
+1. Log in to the [Netless console](https://console.herewhite.com/), click the **application** button on the left navigation bar to create a new application. After creating an application, click the **configuration** button, get the `AppIdentifier`, and then click **Generate sdktoken**, and then copy the generated `sdktoken`.
+2. Log in to the [Agora console](https://console.agora.io/), click the project management button in the left navigation bar, then click the **edit** button, click **updateToken**, and then copy the Netless `sdkToken` you get in the previous step into the pop-up dialog box.
 
-### Run the sample project
+### <a name="run"></a>Run the sample project
 See the following documents to compile and run the sample project:
 
-* [Run the Android project](https://github.com/AgoraIO-Usecase/eEducation/blob/master/education_Android/AgoraEducation/README.md)
-* [Run the iOS project](https://github.com/AgoraIO-Usecase/eEducation/blob/master/education_iOS/README.md)
-* [Run Web and Electron project](https://github.com/AgoraIO-Usecase/eEducation/blob/master/education_web/README.md)
+* [Run the Android project](./education_Android/README.md)
+* [Run the iOS project](./education_iOS/README.md)
+* [Run Web and Electron project](./education_web/README.md)
 
-## Edu Cloud Service
-Designed for developers who are not good at back end development, Agora Edu Cloud Service enables managing the states of rooms, users and streams, and notifying all the users in the classroom of state changes. For details, see [Edu Cloud Service RESTful API](https://agoradoc.github.io/en/edu-cloud-service/restfulapi/).
+## <a name="edu-cloud-service"></a>Agora Edu Cloud Service
+Designed for developers who are not familiar with back end development, Agora Edu Cloud Service enables managing the states of rooms, users and streams, and notifying all the users in the classroom of state changes. For details, see [Edu Cloud Service RESTful API](https://agoradoc.github.io/en/edu-cloud-service/restfulapi/).
 
-## FAQ
+## <a name="faq"></a>FAQ
 ### Security
 If you are worried about the security of the whiteboard sdkToken, you can deploy your own Token generation service. You should store the `sdkToken` on your server, and see the following documents to deploy a service for generating the token of a whiteboard room.
 * JS: [Room Authentication](https://developer-en.netless.link/docs/javascript/quick-start/js-token/)

@@ -3,7 +3,20 @@ _Read this article in another language: [English](README.md)_
 
 > 本文介绍如何使用 eEducation 6.0.0 版本。这是一个不向下兼容的版本。如需使用 eEducation 5.0.0 版本，请查看 [eEducation 5.0.0 使用指南](https://github.com/AgoraIO-Usecase/eEducation/wiki/eEducation-5.0.0-%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)。
 
-## <a name="overview"></a>项目概述  
+## 目录
+
+* [项目概述](#overview)
+  * [支持场景](#scene)
+  * [平台兼容](#platform)
+  * [功能列表](#function)
+  * [限制条件](#restriction)
+* [快速开始](#start)
+  * [前提条件](#prerequisites)
+  * [运行示例项目](#run)
+* [Agora 教育云服务](#edu-cloud-service)
+* [常见问题](#faq)
+
+## <a name="overview"></a>项目概述
 Agora eEducation 是声网专为教育行业提供的示例项目，演示了如何通过 [Agora 教育云服务](https://agoradoc.github.io/cn/edu-cloud-service/restfulapi/)，并配合 **Agora RTC SDK**、**Agora RTM SDK**、**Agora 云端录制服务**和**第三方 Netless 白板 SDK**，快速实现基本的在线互动教学场景。
 
 ### <a name="scene"></a>支持场景
@@ -43,33 +56,33 @@ eEducation 示例项目目前存在以下限制条件。
 6. **并发频道限制**：目前每个 AppId 同时最多 200 个频道，如果需要继续更多频道，请联系我们。
 7. **等待 5 分钟**：创建 AppId 后需要等待 5 分钟进行后续操作，这一步是为了等待后台数据同步完成。
 
-## <a name="strat"></a>快速开始
-  
-### <a name="precondition"></a>前提条件
+## <a name="start"></a>快速开始
+
+### <a name="prerequisites"></a>前提条件
 在编译及运行 eEducation 示例项目之前，你需要完成以下准备工作。
 
-#### 获取声网 App ID  
+#### 获取声网 App ID
 
 1. 在声网[控制台](https://console.agora.io/)创建一个账号。
 2. 登录声网控制台，创建一个项目，鉴权方式选择 **“App ID + App 证书 + Token”**。注意，请确保该项目启用了 [App 证书](https://docs.agora.io/en/Agora%20Platform/token?platform=All%20Platforms#appcertificate)。
 3. 前往**项目管理**页面，获取该项目的 App ID。
 
-#### 获取声网 Customer ID 和 Customer Secret 
+#### 获取声网 Customer ID 和 Customer 密钥
 1. 登录声网[控制台](https://console.agora.io/)，点击页面右上角的用户名，在下拉列表中打开 RESTful API 页面。
 2. 点击下载，即可获取客户 ID（customerId）和客户密钥（customerSecret）。
 
-#### 获取第三方白板 AppIdentifier 和 sdkToken，并把sdkToken注册到 Agora 云服务
-1. 登录 [Netless 控制台](https://console.herewhite.com/)，点击左侧导航栏应用管理按钮，创建或者直接配置现有应用，获取AppIdentifier，然后点击生成 sdkToken，然后复制此 sdkToken。
-2. 登录 [Agora 控制台](https://console.agora.io/)，点击左侧导航栏项目管理按钮，再点击对应项目的编辑按钮，点击更新 token，然后将上一步复制的白板 sdkToken 粘贴至弹出的对话框中。
+#### 获取第三方白板 Netless 的 AppIdentifier 和 sdkToken，并把 sdkToken 注册到 Agora 教育云服务
+1. 登录 [Netless 控制台](https://console.herewhite.com/)，点击左侧导航栏**应用管理**按钮，创建一个应用后，点击**配置**，获取 `AppIdentifier`，然后点击**生成 sdkToken**，然后复制此 `sdkToken`。
+2. 登录 [Agora 控制台](https://console.agora.io/)，点击左侧导航栏项目管理按钮，再点击对应项目的**编辑**按钮，点击**更新 token**，然后将上一步复制的白板 `sdkToken` 粘贴至弹出的对话框中。
 
-### 运行示例项目
+### <a name="run"></a>运行示例项目
 
 参考以下文档在对应的平台编译及运行示例项目：
-* [Android 运行指南](https://github.com/AgoraIO-Usecase/eEducation/blob/master/education_Android/AgoraEducation/README.zh.md)
-* [iOS 运行指南](https://github.com/AgoraIO-Usecase/eEducation/blob/master/education_iOS/README.zh.md)
-* [Web & Electron 运行指南](https://github.com/AgoraIO-Usecase/eEducation/blob/master/education_web/README.zh.md)
+* [Android 运行指南](./education_Android/README.zh.md)
+* [iOS 运行指南](./education_iOS/README.zh.md)
+* [Web & Electron 运行指南](./education_web/README.zh.md)
 
-## 教育云服务
+## <a name="edu-cloud-service"></a>教育云服务
 教育云服务是 Agora 专为后端开发能力不够的开发者提供的云服务，能够实现房间、用户和流的状态管理以及状态变更的消息通知。详见[教育云服务 RESTful API 文档](https://agoradoc.github.io/cn/edu-cloud-service/restfulapi/)。
 
 ## <a name="faq"></a>常见问题
@@ -116,8 +129,10 @@ Windows 系统上打包 Electron demo 时，注意安装的 `agora-electron-sdk`
 1. 先删掉 `node_modules/electron`
 2. `npm install electron@<需要的版本> electron --arch=ia32`
 3. 在 `package.json` 里加入以下字段，然后重新安装 `npm i agora-electron-sdk`
+```
 "agora_electron": {
   "electron_version": "7.1.2",
   "prebuilt": true,
   "platform": "win32"
 },
+```

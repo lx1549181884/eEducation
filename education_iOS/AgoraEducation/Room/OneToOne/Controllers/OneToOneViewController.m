@@ -312,7 +312,7 @@
     [self removeRoleCanvas:event.modifiedStream];
 }
 - (void)localUserStateUpdated:(EduUserEvent*)event changeType:(EduUserStateChangeType)changeType {
-    [self updateRoleViews:event.modifiedUser];
+    [self updateChatViews];
 }
 
 #pragma mark UITextFieldDelegate
