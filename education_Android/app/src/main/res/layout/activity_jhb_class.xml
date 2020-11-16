@@ -2,9 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true"
+    android:visibility="gone"
     tools:context=".classroom.LargeClassActivity">
 
     <io.agora.education.classroom.widget.TitleView
@@ -49,7 +51,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/btn_switch"
+        android:id="@+id/btn_switch_video"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="切换至本地画面"
@@ -104,7 +106,40 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
-            android:id="@+id/btn_layout_1"
+            android:id="@+id/btn_layout_linked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_switch_mic"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="开关麦克风" />
+
+                <Button
+                    android:id="@+id/btn_switch_camera"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="开关摄像头" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_hung_up"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="挂断" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_layout_hand_up_down"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -127,71 +162,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="举手" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btn_hung_up"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="挂断" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/btn_layout_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <Button
-                android:id="@+id/btn_mute_chat_all"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="全体禁言" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:id="@+id/btn_reject"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="拒绝" />
-
-                <Button
-                    android:id="@+id/btn_accept"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="接受" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:id="@+id/btn_video_layout_1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="视频布局1" />
-
-                <Button
-                    android:id="@+id/btn_video_layout_2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="视频布局2" />
-
-                <Button
-                    android:id="@+id/btn_video_layout_3"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="视频布局3" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

@@ -234,18 +234,26 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
      * 禁止本地音频
      */
     public final void muteLocalAudio(boolean isMute) {
+        muteLocalAudio(isMute, null);
+    }
+
+    public final void muteLocalAudio(boolean isMute, EduCallback callback) {
         if (localCameraStream != null) {
-            switchLocalVideoAudio(getMyMediaRoom(), localCameraStream.getHasVideo(), !isMute);
+            switchLocalVideoAudio(getMyMediaRoom(), localCameraStream.getHasVideo(), !isMute, callback);
         }
     }
 
     public final void muteLocalVideo(boolean isMute) {
+        muteLocalVideo(isMute, null);
+    }
+
+    public final void muteLocalVideo(boolean isMute, EduCallback callback) {
         if (localCameraStream != null) {
-            switchLocalVideoAudio(getMyMediaRoom(), !isMute, localCameraStream.getHasAudio());
+            switchLocalVideoAudio(getMyMediaRoom(), !isMute, localCameraStream.getHasAudio(), callback);
         }
     }
 
-    private void switchLocalVideoAudio(EduRoom room, boolean openVideo, boolean openAudio) {
+    private void switchLocalVideoAudio(EduRoom room, boolean openVideo, boolean openAudio, EduCallback callback) {
         /**先更新本地流信息和rte状态*/
         if (localCameraStream != null) {
             room.getLocalUser().initOrUpdateLocalStream(new LocalStreamInitOptions(localCameraStream.getStreamUuid(),
@@ -256,16 +264,25 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
                     room.getLocalUser().muteStream(res, new EduCallback<Boolean>() {
                         @Override
                         public void onSuccess(@Nullable Boolean res) {
+                            if (callback != null) {
+                                callback.onSuccess(res);
+                            }
                         }
 
                         @Override
                         public void onFailure(int code, @Nullable String reason) {
+                            if (callback != null) {
+                                callback.onFailure(code, reason);
+                            }
                         }
                     });
                 }
 
                 @Override
                 public void onFailure(int code, @Nullable String reason) {
+                    if (callback != null) {
+                        callback.onFailure(code, reason);
+                    }
                 }
             });
         }

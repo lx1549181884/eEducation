@@ -69,7 +69,7 @@ public class ClassVideoAdapter extends BaseQuickAdapter<EduStreamInfo, ClassVide
         RtcVideoView item = new RtcVideoView(getContext());
         item.init(R.layout.layout_video_small_class, false);
         int width = ViewGroup.LayoutParams.MATCH_PARENT;
-        int height = (int) (ScreenUtils.getAppScreenWidth() * 0.7 / 2);
+        int height = (int) (ScreenUtils.getAppScreenWidth() / 3);
         item.setLayoutParams(new ViewGroup.LayoutParams(width, height));
         return new ViewHolder(item);
     }

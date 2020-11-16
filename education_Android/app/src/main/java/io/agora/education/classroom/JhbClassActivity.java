@@ -82,18 +82,28 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     protected CardView layout_hand_up;
     @BindView(R.id.rv_videos)
     RecyclerView rv_videos;
-    @BindView(R.id.btn_layout_1)
-    View btn_layout_1;
-    @BindView(R.id.btn_layout_2)
-    View btn_layout_2;
+    @BindView(R.id.btn_layout)
+    View btn_layout;
+    @BindView(R.id.btn_layout_hand_up_down)
+    View btn_layout_hand_up_down;
     @BindView(R.id.rl_videos2)
     View rl_videos2;
     @BindView(R.id.rvv_large)
     RtcVideoView rvv_large;
     @BindView(R.id.rvv_small)
     RtcVideoView rvv_small;
-    @BindView(R.id.btn_mute_chat_all)
-    Button btn_mute_chat_all;
+    @BindView(R.id.content_layout)
+    View content_layout;
+    @BindView(R.id.btn_switch_video)
+    Button btn_switch;
+    @BindView(R.id.btn_layout_linked)
+    View btn_layout_linked;
+    @BindView(R.id.btn_hung_up)
+    View btn_hung_up;
+    @BindView(R.id.btn_switch_mic)
+    Button btn_switch_mic;
+    @BindView(R.id.btn_switch_camera)
+    Button btn_switch_camera;
 
 
     private AppCompatTextView textView_unRead;
@@ -126,6 +136,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     private void onJoinSuccess() {
+        content_layout.setVisibility(View.VISIBLE);
+        refreshBtnLayout();
         boolean showAudienceList;
         switch (roomEntry.getRole()) {
             case UserProperty.jhbRole.ADMIN:
@@ -174,14 +186,17 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @Override
     protected void initView() {
         super.initView();
+
         /*大班课场景不需要计时*/
         title_view.hideTime();
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
         rv_videos.setLayoutManager(gridLayoutManager);
-        rv_videos.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (ScreenUtils.getAppScreenWidth() * 0.7)));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (ScreenUtils.getAppScreenWidth() * 2 / 3));
+        rv_videos.setLayoutParams(params);
         adapter = new ClassVideoAdapter();
         rv_videos.setAdapter(adapter);
+        rl_videos2.setLayoutParams(params);
 
         if (layout_tab != null) {
             /*不为空说明是竖屏*/
@@ -195,8 +210,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 .add(R.id.layout_audience_list, audienceListFragment)
                 .show(audienceListFragment)
                 .commitNow();
-
-        refreshBtnLayout();
 
         // disable operation in large class
         whiteboardFragment.disableDeviceInputs(true);
@@ -214,11 +227,15 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     private void refreshBtnLayout() {
-        if (UserProperty.jhbRole.ADMIN == roomEntry.getRole()) {
-//            btn_layout_2.setVisibility(View.VISIBLE);
-        } else {
-            btn_layout_1.setVisibility(View.VISIBLE);
-        }
+        runOnUiThread(() -> {
+            EduStreamInfo stream = getLocalCameraStream();
+            btn_layout.setVisibility(View.VISIBLE);
+            btn_layout_linked.setVisibility(stream == null ? View.GONE : View.VISIBLE);
+            btn_hung_up.setVisibility(UserProperty.jhbRole.AUDIENCE == roomEntry.getRole() ? View.VISIBLE : View.GONE);
+            btn_layout_hand_up_down.setVisibility(UserProperty.jhbRole.AUDIENCE == roomEntry.getRole() && stream == null ? View.VISIBLE : View.GONE);
+            btn_switch_mic.setText(stream != null && stream.getHasAudio() ? "关闭麦克风" : "打开麦克风");
+            btn_switch_camera.setText(stream != null && stream.getHasVideo() ? "关闭摄像头" : "打开摄像头");
+        });
     }
 
     @Override
@@ -287,10 +304,10 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     /**
      * 用户推流(暂时只能本地用户推流，远端用户推流有问题)
      */
-    public void publishStream(EduUserInfo eduUserInfo) {
+    public void publishStream(EduUserInfo eduUserInfo, boolean hasVideo, boolean hasAudio) {
         /**连麦中，发流*/
         EduStreamInfo streamInfo = new EduStreamInfo(eduUserInfo.getStreamUuid(), null,
-                VideoSourceType.CAMERA, true, true, eduUserInfo);
+                VideoSourceType.CAMERA, hasVideo, hasAudio, eduUserInfo);
         /**举手连麦，需要新建流信息*/
         getLocalUser().publishStream(streamInfo, new EduCallback<Boolean>() {
             @Override
@@ -422,13 +439,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     }
 
     @Override
-    public void onMuteChanged(boolean muteAll, boolean muteSelf) {
-        super.onMuteChanged(muteAll, muteSelf);
-        btn_mute_chat_all.setSelected(muteAll);
-        btn_mute_chat_all.setText(muteAll ? "取消全体禁言" : "全体禁言");
-    }
-
-    @Override
     public void onRoomPropertyChanged(@NotNull EduRoom classRoom, @Nullable Map<String, Object> cause) {
         super.onRoomPropertyChanged(classRoom, cause);
         /*处理可能收到的录制的消息*/
@@ -493,11 +503,10 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         boolean showToast = cause != null;
         switch (type) {
             case UserProperty.type.applyAudio_adminAccept:
+                publishStream(getLocalUserInfo(), false, true);
+                break;
             case UserProperty.type.applyVideo_adminAccept:
-                if (showToast) {
-//                    ToastUtils.showShort(R.string.accept_interactive);
-                }
-                publishStream(getLocalUserInfo());
+                publishStream(getLocalUserInfo(), true, true);
                 break;
             case UserProperty.type.applyAudio_adminReject:
             case UserProperty.type.applyVideo_adminReject:
@@ -526,6 +535,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         refreshVideoList();
         audienceListFragment.updateLocalStream(getLocalCameraStream());
         refreshAudienceList();
+        refreshBtnLayout();
+        ToastUtils.showShort("已连麦");
     }
 
     @Override
@@ -536,6 +547,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         refreshVideoList();
         audienceListFragment.updateLocalStream(getLocalCameraStream());
         refreshAudienceList();
+        refreshBtnLayout();
     }
 
     @Override
@@ -544,6 +556,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         refreshVideoList();
         audienceListFragment.updateLocalStream(getLocalCameraStream());
         refreshAudienceList();
+        refreshBtnLayout();
+        ToastUtils.showShort("已挂断");
     }
 
     private String handUpUserId;
@@ -554,12 +568,12 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         try {
             switch (GsonUtils.fromJson(message.getMessage(), Msg.class).data.type) {
                 case Msg.Type.adminInvite_audioLink:
-                    runOnUiThread(() -> ConfirmDialog.normalWithButton("主播邀请连麦", "拒绝", "同意", confirm -> {
+                    runOnUiThread(() -> ConfirmDialog.normalWithButton("主播邀请语音连麦", "拒绝", "同意", confirm -> {
                         if (confirm) {
                             setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
                                 @Override
                                 public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                                    publishStream(getLocalUserInfo());
+                                    publishStream(getLocalUserInfo(), false, true);
                                     getMainEduRoom().getLocalUser().sendUserMessage(GsonUtils.toJson(new Msg(Msg.Type.adminInvite_audioLink_audienceAccept)), message.getFromUser(), new EduCallback<EduMsg>() {
                                         @Override
                                         public void onSuccess(@org.jetbrains.annotations.Nullable EduMsg res) {
@@ -595,11 +609,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onUserChatMessageReceived(@NotNull EduChatMsg chatMsg) {
-        super.onUserChatMessageReceived(chatMsg);
     }
 
     private void refreshVideoList() {
@@ -709,7 +718,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_apply, new EduCallback() {
             @Override
             public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                ToastUtils.showShort("举手成功");
+                ToastUtils.showShort("已举手");
             }
 
             @Override
@@ -724,38 +733,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_cancel, new EduCallback() {
             @Override
             public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                ToastUtils.showShort("取消成功");
-            }
-
-            @Override
-            public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                ToastUtils.showShort(code + " " + reason);
-            }
-        });
-    }
-
-    @OnClick(R.id.btn_accept)
-    void accept() {
-        setApplyCall(getUserInfo(handUpUserId), UserProperty.type.applyAudio_adminAccept, new EduCallback() {
-            @Override
-            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                ToastUtils.showShort("接收成功");
-                publishStream(getUserInfo(handUpUserId));
-            }
-
-            @Override
-            public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                ToastUtils.showShort(code + " " + reason);
-            }
-        });
-    }
-
-    @OnClick(R.id.btn_reject)
-    void reject() {
-        setApplyCall(getUserInfo(handUpUserId), UserProperty.type.applyAudio_adminReject, new EduCallback() {
-            @Override
-            public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                ToastUtils.showShort("拒绝成功");
+                ToastUtils.showShort("已取消举手");
             }
 
             @Override
@@ -773,47 +751,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         getLocalUser().setUserProperty(property, new HashMap<>(), eduUserInfo, callback);
     }
 
-    @OnClick(R.id.btn_video_layout_1)
-    void videoLayout1() {
-        ArrayList<RoomProperty.liveConfig.DataBean> data = new ArrayList<>();
-        for (EduStreamInfo info : getCurFullStream()) {
-            data.add(new RoomProperty.liveConfig.DataBean(info.getStreamUuid()));
-        }
-    }
-
-    @OnClick(R.id.btn_video_layout_2)
-    void videoLayout2() {
-        ArrayList<RoomProperty.liveConfig.DataBean> data = new ArrayList<>();
-        for (EduStreamInfo info : getCurFullStream()) {
-            data.add(new RoomProperty.liveConfig.DataBean(info.getStreamUuid()));
-        }
-    }
-
-    @OnClick(R.id.btn_video_layout_3)
-    void videoLayout3() {
-        ArrayList<RoomProperty.liveConfig.DataBean> data = new ArrayList<>();
-        for (EduStreamInfo info : getCurFullStream()) {
-            data.add(new RoomProperty.liveConfig.DataBean(info.getStreamUuid()));
-        }
-    }
-
     RoomProperty.liveConfig liveConfig = new RoomProperty.liveConfig();
-
-    @OnClick(R.id.btn_mute_chat_all)
-    void muteChatAll() {
-        boolean allow = !btn_mute_chat_all.isSelected();
-        getLocalUser().allowStudentChat(!allow, new EduCallback<Unit>() {
-            @Override
-            public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
-                ToastUtils.showShort("禁言成功");
-            }
-
-            @Override
-            public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                ToastUtils.showShort(code + " " + reason);
-            }
-        });
-    }
 
     @Override
     protected void onDestroy() {
@@ -826,20 +764,54 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         if (height == 0) {
             refreshBtnLayout();
         } else {
-            btn_layout_1.setVisibility(View.GONE);
-            btn_layout_2.setVisibility(View.GONE);
+            btn_layout.setVisibility(View.GONE);
         }
     }
 
-    @BindView(R.id.btn_switch)
-    Button btn_switch;
-
     boolean showLiveVideo = true;
 
-    @OnClick(R.id.btn_switch)
+    @OnClick(R.id.btn_switch_video)
     void switchVideo() {
         showLiveVideo = !showLiveVideo;
         btn_switch.setText(showLiveVideo ? "切换至本地画面" : "切换至直播画面");
         refreshVideoList();
+    }
+
+    @OnClick(R.id.btn_switch_mic)
+    void switchMic() {
+        EduStreamInfo stream = getLocalCameraStream();
+        if (stream != null) {
+            boolean hasAudio = stream.getHasAudio();
+            muteLocalAudio(hasAudio, new EduCallback() {
+                @Override
+                public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                    ToastUtils.showShort(hasAudio ? "已关闭麦克风" : "已关闭麦克风");
+                }
+
+                @Override
+                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                    ToastUtils.showShort(code + " " + reason);
+                }
+            });
+        }
+    }
+
+    @OnClick(R.id.btn_switch_camera)
+    void switchCamera() {
+        EduStreamInfo stream = getLocalCameraStream();
+        if (stream != null) {
+            boolean hasVideo = stream.getHasVideo();
+            muteLocalVideo(hasVideo, new EduCallback() {
+                @Override
+                public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                    ToastUtils.showShort(hasVideo ? "已关闭摄像头" : "已打开摄像头");
+                }
+
+                @Override
+                public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                    ToastUtils.showShort(code + " " + reason);
+                }
+            });
+        }
     }
 }
