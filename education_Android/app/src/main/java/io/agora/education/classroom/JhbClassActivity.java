@@ -88,9 +88,11 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     View btn_layout_hand_up_down;
     @BindView(R.id.rl_videos2)
     View rl_videos2;
-    @BindView(R.id.rvv_large)
+    @BindView(R.id.fl_video_large)
+    FrameLayout fl_video_large;
+    @BindView(R.id.fl_video_small)
+    FrameLayout fl_video_small;
     RtcVideoView rvv_large;
-    @BindView(R.id.rvv_small)
     RtcVideoView rvv_small;
     @BindView(R.id.content_layout)
     View content_layout;
@@ -192,11 +194,23 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
         rv_videos.setLayoutManager(gridLayoutManager);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (ScreenUtils.getAppScreenWidth() * 2 / 3));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ScreenUtils.getAppScreenWidth() * 2 / 3);
         rv_videos.setLayoutParams(params);
         adapter = new ClassVideoAdapter();
         rv_videos.setAdapter(adapter);
         rl_videos2.setLayoutParams(params);
+        if (rvv_large == null) {
+            rvv_large = new RtcVideoView(this);
+            rvv_large.init(R.layout.layout_video_small_class, false);
+        }
+        removeFromParent(rvv_large);
+        fl_video_large.addView(rvv_large, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        if (rvv_small == null) {
+            rvv_small = new RtcVideoView(this);
+            rvv_small.init(R.layout.layout_video_small_class, false);
+        }
+        removeFromParent(rvv_small);
+        fl_video_small.addView(rvv_small, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         if (layout_tab != null) {
             /*不为空说明是竖屏*/
@@ -681,19 +695,36 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 cmd = RoomProperty.liveConfig.CMD.CMD_1;
             }
 
+            if (finalList.size() == 0 && cmd == RoomProperty.liveConfig.CMD.CMD_3) {
+                cmd = RoomProperty.liveConfig.CMD.CMD_1;
+            }
+
+            rvv_large.setName("");
+            rvv_large.muteAudio(true);
+            rvv_large.muteVideo(true);
+            rvv_small.setName("");
+            rvv_small.muteAudio(true);
+            rvv_small.muteVideo(true);
+
             switch (cmd) {
                 case RoomProperty.liveConfig.CMD.CMD_1:
                 case RoomProperty.liveConfig.CMD.CMD_2:
                     rv_videos.setVisibility(View.GONE);
                     rl_videos2.setVisibility(View.VISIBLE);
-                    rvv_small.setViewVisibility(cmd == RoomProperty.liveConfig.CMD.CMD_1 ? View.GONE : View.VISIBLE);
+                    rvv_small.setVisibility(cmd == RoomProperty.liveConfig.CMD.CMD_1 ? View.GONE : View.VISIBLE);
                     adapter.setNewList(new ArrayList<>());
                     for (int i = 0; i < finalList.size(); i++) {
                         EduStreamInfo info = finalList.get(i);
                         if (i == 0) {
-                            renderStream(getMainEduRoom(), info, rvv_large);
+                            renderStream(getMainEduRoom(), info, rvv_large.getVideoLayout());
+                            rvv_large.setName(info.getPublisher().getUserName());
+                            rvv_large.muteAudio(!info.getHasAudio());
+                            rvv_large.muteVideo(!info.getHasVideo());
                         } else if (i == 1 && RoomProperty.liveConfig.CMD.CMD_2 == cmd) {
-                            renderStream(getMainEduRoom(), info, rvv_small);
+                            renderStream(getMainEduRoom(), info, rvv_small.getVideoLayout());
+                            rvv_small.setName(info.getPublisher().getUserName());
+                            rvv_small.muteAudio(!info.getHasAudio());
+                            rvv_small.muteVideo(!info.getHasVideo());
                         }
                     }
                     break;

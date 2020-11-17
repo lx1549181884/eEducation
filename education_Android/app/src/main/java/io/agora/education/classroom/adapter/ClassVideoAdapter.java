@@ -12,12 +12,10 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import io.agora.education.R;
 import io.agora.education.api.stream.data.EduStreamInfo;
-import io.agora.education.api.stream.data.VideoSourceType;
 import io.agora.education.classroom.BaseClassActivity;
 import io.agora.education.classroom.widget.RtcVideoView;
 
@@ -69,7 +67,7 @@ public class ClassVideoAdapter extends BaseQuickAdapter<EduStreamInfo, ClassVide
         RtcVideoView item = new RtcVideoView(getContext());
         item.init(R.layout.layout_video_small_class, false);
         int width = ViewGroup.LayoutParams.MATCH_PARENT;
-        int height = (int) (ScreenUtils.getAppScreenWidth() / 3);
+        int height = ScreenUtils.getAppScreenWidth() / 3;
         item.setLayoutParams(new ViewGroup.LayoutParams(width, height));
         return new ViewHolder(item);
     }

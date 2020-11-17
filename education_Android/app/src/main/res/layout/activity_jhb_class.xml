@@ -37,13 +37,13 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <io.agora.education.classroom.widget.RtcVideoView
-                android:id="@+id/rvv_large"
+            <FrameLayout
+                android:id="@+id/fl_video_large"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <io.agora.education.classroom.widget.RtcVideoView
-                android:id="@+id/rvv_small"
+            <FrameLayout
+                android:id="@+id/fl_video_small"
                 android:layout_width="@dimen/dp_150"
                 android:layout_height="@dimen/dp_100"
                 android:layout_alignParentRight="true" />
@@ -54,7 +54,9 @@
         android:id="@+id/btn_switch_video"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp_20"
         android:text="切换至本地画面"
+        android:textSize="@dimen/dp_10"
         app:layout_constraintBottom_toBottomOf="@id/ll_videos"
         app:layout_constraintRight_toRightOf="@id/ll_videos" />
 
