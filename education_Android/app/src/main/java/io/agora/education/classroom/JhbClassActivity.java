@@ -623,16 +623,25 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             }
             List<EduStreamInfo> finalList = new ArrayList<>();
 
+            // 按顺序添加视频
+            if (liveConfig.data != null) {
+                for (RoomProperty.liveConfig.DataBean bean : liveConfig.data) {
+                    for (EduStreamInfo info : list) {
+                        if (info.getStreamUuid().equals(bean.streamUuid)) {
+                            finalList.add(info);
+                            break;
+                        }
+                    }
+                }
+            }
+
             for (int i = 0; i < list.size(); i++) {
                 EduStreamInfo info = list.get(i);
                 boolean isOutput = false;
-                if (liveConfig.data != null) {
-                    for (RoomProperty.liveConfig.DataBean bean : liveConfig.data) {
-                        if (info.getStreamUuid().equals(bean.streamUuid)) {
-                            finalList.add(info);
-                            isOutput = true;
-                            break;
-                        }
+                for (EduStreamInfo streamInfo : finalList) {
+                    if (info.getStreamUuid().equals(streamInfo.getStreamUuid())) {
+                        isOutput = true;
+                        break;
                     }
                 }
                 if (isOutput) {
