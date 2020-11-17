@@ -97,7 +97,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @BindView(R.id.content_layout)
     View content_layout;
     @BindView(R.id.btn_switch_video)
-    Button btn_switch;
+    Button btn_switch_video;
     @BindView(R.id.btn_layout_linked)
     View btn_layout_linked;
     @BindView(R.id.btn_hung_up)
@@ -632,6 +632,11 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     private void showVideoList(List<EduStreamInfo> list) {
         LogUtil.log("showVideoList", list.size());
         runOnUiThread(() -> {
+            btn_switch_video.setVisibility(getLocalCameraStream() == null ? View.GONE : View.VISIBLE);
+            if (getLocalCameraStream() == null && !showLiveVideo) {
+                btn_switch_video.performClick();
+                return;
+            }
             for (EduStreamInfo info : list) {
                 renderStream(getMainEduRoom(), info, null);
             }
@@ -813,7 +818,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     @OnClick(R.id.btn_switch_video)
     void switchVideo() {
         showLiveVideo = !showLiveVideo;
-        btn_switch.setText(showLiveVideo ? "切换至本地画面" : "切换至直播画面");
+        btn_switch_video.setText(showLiveVideo ? "切换至本地画面" : "切换至直播画面");
         refreshVideoList();
     }
 
