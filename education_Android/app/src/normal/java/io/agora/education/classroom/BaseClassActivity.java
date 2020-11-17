@@ -677,8 +677,8 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
             /**首次获取到白板信息*/
             mainBoardBean = new Gson().fromJson(boardJson, BoardBean.class);
             runOnUiThread(() -> {
-                whiteboardFragment.initBoardWithRoomToken(mainBoardBean.getInfo().getBoardId(),
-                        mainBoardBean.getInfo().getBoardToken(), getLocalUserInfo().getUserUuid());
+//                whiteboardFragment.initBoardWithRoomToken(mainBoardBean.getInfo().getBoardId(),
+//                        mainBoardBean.getInfo().getBoardToken(), getLocalUserInfo().getUserUuid());
 //                boolean follow = whiteBoardIsFollowMode(state);
 //                if (follow) {
 //                    layout_whiteboard.setVisibility(View.VISIBLE);

@@ -57,7 +57,7 @@ public class ReplayActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        video_view.setUseController(false);
+        video_view.setUseController(true);
         video_view.setVisibility(!TextUtils.isEmpty(url) ? View.VISIBLE : View.GONE);
         findViewById(R.id.iv_temp).setVisibility(TextUtils.isEmpty(url) ? View.VISIBLE : View.GONE);
 
