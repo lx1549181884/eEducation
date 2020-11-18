@@ -304,8 +304,15 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
     }
 
     protected EduUserInfo getLocalUserInfo() {
-        if (getLocalUser() != null) {
-            return getLocalUser().getUserInfo();
+        try {
+            EduUserInfo userInfo = getUserInfo(getLocalUser().getUserInfo().getUserUuid());
+            if (userInfo == null) {
+                return getLocalUser().getUserInfo();
+            } else {
+                return userInfo;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
