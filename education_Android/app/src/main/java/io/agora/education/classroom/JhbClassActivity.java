@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.KeyboardUtils;
 import com.blankj.utilcode.util.ScreenUtils;
+import com.blankj.utilcode.util.ThreadUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.google.android.material.tabs.TabLayout;
 
@@ -154,36 +155,38 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         showFragmentWithJoinSuccess();
         onRoomPropertyChanged(getMainEduRoom(), null);
         onLocalUserPropertyUpdated(getLocalUserInfo(), null);
-        switch (roomEntry.getRole()) { // 管理员/主持人/嘉宾主动连麦
-            case UserProperty.jhbRole.ADMIN:
-            case UserProperty.jhbRole.HOST:
-            case UserProperty.jhbRole.GUEST:
-                setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
-                    @Override
-                    public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                        ToastUtils.showShort("主动连麦");
-                    }
+        ThreadUtils.runOnUiThreadDelayed(() -> {
+            switch (roomEntry.getRole()) { // 管理员/主持人/嘉宾主动连麦
+                case UserProperty.jhbRole.ADMIN:
+                case UserProperty.jhbRole.HOST:
+                case UserProperty.jhbRole.GUEST:
+                    setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_adminAccept, new EduCallback() {
+                        @Override
+                        public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                            ToastUtils.showShort("主动连麦");
+                            publishStream(getLocalUserInfo(), true, true);
+                        }
 
-                    @Override
-                    public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                        ToastUtils.showShort(code + " " + reason);
-                    }
-                });
-                break;
-            case UserProperty.jhbRole.AUDIENCE:
-            default:
-                hungUp();
-                setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_cancel, new EduCallback() {
-                    @Override
-                    public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                    }
+                        @Override
+                        public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                            ToastUtils.showShort(code + " " + reason);
+                        }
+                    });
+                    break;
+                case UserProperty.jhbRole.AUDIENCE:
+                default:
+                    setApplyCall(getLocalUserInfo(), UserProperty.type.applyVideo_cancel, new EduCallback() {
+                        @Override
+                        public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
+                        }
 
-                    @Override
-                    public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
-                    }
-                });
-                break;
-        }
+                        @Override
+                        public void onFailure(int code, @org.jetbrains.annotations.Nullable String reason) {
+                        }
+                    });
+                    break;
+            }
+        }, 1000);
     }
 
     @Override
@@ -240,7 +243,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             EduStreamInfo stream = getLocalCameraStream();
             btn_layout.setVisibility(View.VISIBLE);
             btn_layout_linked.setVisibility(stream == null ? View.GONE : View.VISIBLE);
-            btn_hung_up.setVisibility(UserProperty.jhbRole.AUDIENCE == roomEntry.getRole() ? View.VISIBLE : View.GONE);
             btn_layout_hand_up_down.setVisibility(UserProperty.jhbRole.AUDIENCE == roomEntry.getRole() && stream == null ? View.VISIBLE : View.GONE);
             btn_switch_mic.setText(stream != null && stream.getHasAudio() ? "关闭麦克风" : "打开麦克风");
             btn_switch_camera.setText(stream != null && stream.getHasVideo() ? "关闭摄像头" : "打开摄像头");
@@ -266,6 +268,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
      */
     @OnClick(R.id.btn_hung_up)
     void hungUp() {
+        LogUtil.log("hungUp");
         /*连麦过程中取消
          * 1：关闭本地流
          * 2：更新流信息到服务器
@@ -277,6 +280,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             getLocalUser().initOrUpdateLocalStream(options, new EduCallback<EduStreamInfo>() {
                 @Override
                 public void onSuccess(@Nullable EduStreamInfo res) {
+                    LogUtil.log("unPublishStream", res.getPublisher().getUserName());
                     getLocalUser().unPublishStream(res, new EduCallback<Boolean>() {
                         @Override
                         public void onSuccess(@Nullable Boolean res) {
@@ -286,6 +290,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                                 @Override
                                 public void onSuccess(@org.jetbrains.annotations.Nullable Unit res) {
 //                                    ToastUtils.showShort("挂断成功");
+                                    refreshBtnLayout();
                                 }
 
                                 @Override
@@ -314,6 +319,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
      * 用户推流(暂时只能本地用户推流，远端用户推流有问题)
      */
     public void publishStream(EduUserInfo eduUserInfo, boolean hasVideo, boolean hasAudio) {
+        LogUtil.log("publishStream");
         /**连麦中，发流*/
         EduStreamInfo streamInfo = new EduStreamInfo(eduUserInfo.getStreamUuid(), null,
                 VideoSourceType.CAMERA, hasVideo, hasAudio, eduUserInfo);
@@ -512,10 +518,14 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         boolean showToast = cause != null;
         switch (type) {
             case UserProperty.type.applyAudio_adminAccept:
-                publishStream(getLocalUserInfo(), false, true);
+                if (cause != null) {
+                    publishStream(getLocalUserInfo(), false, true);
+                }
                 break;
             case UserProperty.type.applyVideo_adminAccept:
-                publishStream(getLocalUserInfo(), true, true);
+                if (cause != null) {
+                    publishStream(getLocalUserInfo(), true, true);
+                }
                 break;
             case UserProperty.type.applyAudio_adminReject:
             case UserProperty.type.applyVideo_adminReject:

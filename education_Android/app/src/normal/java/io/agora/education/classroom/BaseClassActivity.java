@@ -318,6 +318,16 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
     }
 
     public EduStreamInfo getLocalCameraStream() {
+        try {
+            EduUserInfo localUserInfo = getLocalUserInfo();
+            for (EduStreamInfo eduStreamInfo : getCurFullStream()) {
+                if (localUserInfo.getStreamUuid().equals(eduStreamInfo.getStreamUuid())) {
+                    setLocalCameraStream(eduStreamInfo);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return localCameraStream;
     }
 
@@ -749,7 +759,7 @@ public abstract class BaseClassActivity extends BaseActivity implements EduRoomE
 
     @Override
     public void onLocalUserPropertyUpdated(@NotNull EduUserInfo userInfo, @Nullable Map<String, Object> cause) {
-        LogUtil.log("onLocalUserPropertyUpdated", userInfo.getUserProperties());
+        LogUtil.log("onLocalUserPropertyUpdated", userInfo.getUserProperties(), cause);
     }
 
     @Override
