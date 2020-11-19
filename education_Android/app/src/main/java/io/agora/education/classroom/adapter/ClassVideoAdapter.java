@@ -16,6 +16,7 @@ import java.util.List;
 
 import io.agora.education.R;
 import io.agora.education.api.stream.data.EduStreamInfo;
+import io.agora.education.api.stream.data.VideoSourceType;
 import io.agora.education.classroom.BaseClassActivity;
 import io.agora.education.classroom.widget.RtcVideoView;
 
@@ -105,7 +106,7 @@ public class ClassVideoAdapter extends BaseQuickAdapter<EduStreamInfo, ClassVide
         }
 
         void convert(EduStreamInfo item) {
-            view.muteVideo(!item.getHasVideo());
+            view.muteVideo(item.getVideoSourceType() != VideoSourceType.SCREEN && !item.getHasVideo());
             view.muteAudio(!item.getHasAudio());
             view.setName(item.getPublisher().getUserName());
         }

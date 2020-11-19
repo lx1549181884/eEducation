@@ -50,22 +50,51 @@
         </RelativeLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_switch_video"
-        android:layout_width="wrap_content"
+    <RadioGroup
+        android:id="@+id/rg_view"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/dp_20"
-        android:text="切换至本地画面"
-        android:textSize="@dimen/dp_10"
-        app:layout_constraintBottom_toBottomOf="@id/ll_videos"
-        app:layout_constraintRight_toRightOf="@id/ll_videos" />
+        android:checkedButton="@id/rb_live"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/dp_10"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_videos">
+
+        <RadioButton
+            android:id="@+id/rb_local"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本地画面" />
+
+        <RadioButton
+            android:id="@+id/rb_live"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:text="直播画面" />
+
+        <RadioButton
+            android:id="@+id/rb_screen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:text="屏幕共享画面" />
+    </RadioGroup>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/gray_D8D8D8"
+        app:layout_constraintBottom_toBottomOf="@id/rg_view" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/layout_tab"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_44"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/ll_videos"
+        app:layout_constraintTop_toBottomOf="@id/rg_view"
         app:tabGravity="fill"
         app:tabIndicatorColor="@color/blue_44A2FC"
         app:tabIndicatorHeight="@dimen/dp_1"

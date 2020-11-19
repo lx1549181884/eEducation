@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,7 +66,7 @@ import io.agora.education.lx.UserProperty;
 import io.agora.education.widget.ConfirmDialog;
 import kotlin.Unit;
 
-public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener, KeyboardUtils.OnSoftInputChangedListener {
+public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnTabSelectedListener, KeyboardUtils.OnSoftInputChangedListener, RadioGroup.OnCheckedChangeListener {
     private static final String TAG = "JhbClassActivity";
 
     @Nullable
@@ -96,8 +97,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     RtcVideoView rvv_small;
     @BindView(R.id.content_layout)
     View content_layout;
-    @BindView(R.id.btn_switch_video)
-    Button btn_switch_video;
     @BindView(R.id.btn_layout_linked)
     View btn_layout_linked;
     @BindView(R.id.btn_hung_up)
@@ -106,6 +105,8 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     Button btn_switch_mic;
     @BindView(R.id.btn_switch_camera)
     Button btn_switch_camera;
+    @BindView(R.id.rg_view)
+    RadioGroup rg_view;
 
 
     private AppCompatTextView textView_unRead;
@@ -229,15 +230,9 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         whiteboardFragment.disableDeviceInputs(true);
         whiteboardFragment.setWritable(false);
 
-        EduStreamInfo streamInfo = getScreenShareStream();
-        if (streamInfo != null) {
-            layout_whiteboard.setVisibility(View.GONE);
-            layout_share_video.setVisibility(View.VISIBLE);
-            layout_share_video.removeAllViews();
-            renderStream(getMainEduRoom(), streamInfo, layout_share_video);
-        }
-
         KeyboardUtils.registerSoftInputChangedListener(this, this);
+
+        rg_view.setOnCheckedChangeListener(this);
     }
 
     private void refreshBtnLayout() {
@@ -632,11 +627,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
     private void showVideoList(List<EduStreamInfo> list) {
         LogUtil.log("showVideoList", list.size());
         runOnUiThread(() -> {
-            btn_switch_video.setVisibility(getLocalCameraStream() == null ? View.GONE : View.VISIBLE);
-            if (getLocalCameraStream() == null && !showLiveVideo) {
-                btn_switch_video.performClick();
-                return;
-            }
             for (EduStreamInfo info : list) {
                 renderStream(getMainEduRoom(), info, null);
             }
@@ -662,6 +652,9 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                         isOutput = true;
                         break;
                     }
+                }
+                if (info.getVideoSourceType() == VideoSourceType.SCREEN) {
+                    isOutput = true;
                 }
                 if (isOutput) {
                     getLocalUser().subscribeStream(info, new StreamSubscribeOptions(true, true, VideoStreamType.HIGH), new EduCallback<Unit>() {
@@ -691,13 +684,26 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             }
             int cmd = liveConfig.cmd;
 
-            if (!showLiveVideo) {
-                finalList.clear();
-                EduStreamInfo localCameraStream = getLocalCameraStream();
-                if (localCameraStream != null) {
-                    finalList.add(localCameraStream);
-                }
-                cmd = RoomProperty.liveConfig.CMD.CMD_1;
+            switch (rg_view.getCheckedRadioButtonId()) {
+                case R.id.rb_local:
+                    finalList.clear();
+                    EduStreamInfo localCameraStream = getLocalCameraStream();
+                    if (localCameraStream != null) {
+                        finalList.add(localCameraStream);
+                    }
+                    cmd = RoomProperty.liveConfig.CMD.CMD_1;
+                    break;
+                case R.id.rb_screen:
+                    finalList.clear();
+                    EduStreamInfo screenShareStream = getScreenShareStream();
+                    if (screenShareStream != null) {
+                        finalList.add(screenShareStream);
+                    }
+                    cmd = RoomProperty.liveConfig.CMD.CMD_1;
+                    break;
+                case R.id.rb_live:
+                default:
+                    break;
             }
 
             if (finalList.size() == 0 && cmd == RoomProperty.liveConfig.CMD.CMD_3) {
@@ -724,7 +730,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                             renderStream(getMainEduRoom(), info, rvv_large.getVideoLayout());
                             rvv_large.setName(info.getPublisher().getUserName());
                             rvv_large.muteAudio(!info.getHasAudio());
-                            rvv_large.muteVideo(!info.getHasVideo());
+                            rvv_large.muteVideo(info.getVideoSourceType() != VideoSourceType.SCREEN && !info.getHasVideo());
                         } else if (i == 1 && RoomProperty.liveConfig.CMD.CMD_2 == cmd) {
                             renderStream(getMainEduRoom(), info, rvv_small.getVideoLayout());
                             rvv_small.setName(info.getPublisher().getUserName());
@@ -813,15 +819,6 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
         }
     }
 
-    boolean showLiveVideo = true;
-
-    @OnClick(R.id.btn_switch_video)
-    void switchVideo() {
-        showLiveVideo = !showLiveVideo;
-        btn_switch_video.setText(showLiveVideo ? "切换至本地画面" : "切换至直播画面");
-        refreshVideoList();
-    }
-
     @OnClick(R.id.btn_switch_mic)
     void switchMic() {
         EduStreamInfo stream = getLocalCameraStream();
@@ -858,5 +855,10 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
                 }
             });
         }
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        refreshVideoList();
     }
 }
