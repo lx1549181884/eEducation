@@ -53,6 +53,7 @@
         android:id="@+id/line1"
         android:layout_width="0dp"
         android:layout_height="1px"
+        android:layout_marginTop="@dimen/dp_19"
         android:background="@color/gray_D8D8D8"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

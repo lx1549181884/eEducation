@@ -34,6 +34,7 @@ public class ConfirmDialog extends DialogFragment {
     private String cancelText;
     private String confirmText;
     private boolean isSingle;
+    public boolean isNoBtn;
     @Nullable
     protected DialogClickListener listener;
 
@@ -65,6 +66,14 @@ public class ConfirmDialog extends DialogFragment {
         return fragment;
     }
 
+    public static ConfirmDialog noBtn(String content) {
+        ConfirmDialog fragment = ConfirmDialog.normal(content, confirm -> {
+        });
+        fragment.content = content;
+        fragment.isNoBtn = true;
+        return fragment;
+    }
+
     @Override
     public void onCancel(@NonNull DialogInterface dialog) {
         if (listener != null)
@@ -91,6 +100,11 @@ public class ConfirmDialog extends DialogFragment {
             tv_dialog_confirm.setText(confirmText);
         tv_dialog_cancel.setVisibility(isSingle ? View.GONE : View.VISIBLE);
         line2.setVisibility(isSingle ? View.GONE : View.VISIBLE);
+        if (isNoBtn) {
+            tv_dialog_confirm.setVisibility(View.GONE);
+            tv_dialog_cancel.setVisibility(View.GONE);
+            line2.setVisibility(View.GONE);
+        }
         return root;
     }
 

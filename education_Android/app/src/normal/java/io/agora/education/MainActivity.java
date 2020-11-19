@@ -48,6 +48,7 @@ import io.agora.education.service.CommonService;
 import io.agora.education.service.bean.ResponseBody;
 import io.agora.education.service.bean.request.RoomCreateOptionsReq;
 import io.agora.education.util.AppUtil;
+import io.agora.education.widget.ConfirmDialog;
 import io.agora.education.widget.PolicyDialog;
 
 import static io.agora.education.EduApplication.getAppId;
@@ -78,6 +79,7 @@ public class MainActivity extends BaseActivity {
     protected RadioGroup rg_role;
 
     private String url;
+    private ConfirmDialog loadingDialog = ConfirmDialog.noBtn("加载中");
 
     @Override
     protected int getLayoutResId() {
@@ -198,6 +200,8 @@ public class MainActivity extends BaseActivity {
             return;
         }
 
+        loadingDialog.showNow(getSupportFragmentManager(), null);
+
         /**userUuid和roomUuid需用户自己指定，并保证唯一性*/
         int roomType = getClassType(roomTypeStr);
 
@@ -216,11 +220,14 @@ public class MainActivity extends BaseActivity {
                     Log.e(TAG, "初始化EduManager成功");
                     setManager(res);
                     createRoom(yourNameStr, userUuid, roomNameStr, roomUuid, roomType, getRole());
+                } else {
+                    loadingDialog.dismissAllowingStateLoss();
                 }
             }
 
             @Override
             public void onFailure(int code, @Nullable String reason) {
+                loadingDialog.dismissAllowingStateLoss();
                 Log.e(TAG, "初始化EduManager失败-> code:" + code + ",reason:" + reason);
             }
         });
@@ -273,6 +280,7 @@ public class MainActivity extends BaseActivity {
                         Log.e(TAG, "调用scheduleClass函数成功");
                         Intent intent = createIntent(yourNameStr, yourUuid, roomNameStr, roomUuid, roomType, role);
                         startActivityForResult(intent, REQUEST_CODE_RTE);
+                        loadingDialog.dismissAllowingStateLoss();
                     }
 
                     @Override
@@ -291,6 +299,7 @@ public class MainActivity extends BaseActivity {
                         } else {
                             Log.e(TAG, "排课失败");
                         }
+                        loadingDialog.dismissAllowingStateLoss();
                     }
                 }));
     }
