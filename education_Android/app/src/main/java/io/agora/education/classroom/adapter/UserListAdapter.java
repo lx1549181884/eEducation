@@ -89,6 +89,8 @@ public class UserListAdapter extends BaseQuickAdapter<EduUserInfo, UserListAdapt
         }
         viewHolder.iv_btn_mute_audio.setVisibility(isLocal ? View.VISIBLE : View.GONE);
         viewHolder.iv_btn_mute_video.setVisibility(isLocal ? View.VISIBLE : View.GONE);
+        viewHolder.iv_btn_mute_audio.setVisibility(View.GONE);
+        viewHolder.iv_btn_mute_video.setVisibility(View.GONE);
 
         viewHolder.btn_mute_chat.setText(userInfo.isChatAllowed() ? "禁言" : "取消禁言");
     }
