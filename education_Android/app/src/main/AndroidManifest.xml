@@ -59,7 +59,8 @@
         <activity
             android:name=".classroom.JhbClassActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".classroom.ReplayActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
