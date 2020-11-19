@@ -1,9 +1,7 @@
 package io.agora.education;
 
 import android.Manifest;
-import android.app.DownloadManager;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
@@ -21,6 +19,7 @@ import com.blankj.utilcode.util.TimeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
 import butterknife.BindView;
@@ -38,8 +37,6 @@ import io.agora.education.api.room.data.RoomType;
 import io.agora.education.api.statistics.AgoraError;
 import io.agora.education.api.user.data.EduUserRole;
 import io.agora.education.base.BaseActivity;
-import io.agora.education.base.BaseCallback;
-import io.agora.education.broadcast.DownloadReceiver;
 import io.agora.education.classroom.BaseClassActivity;
 import io.agora.education.classroom.BreakoutClassActivity;
 import io.agora.education.classroom.JhbClassActivity;
@@ -51,7 +48,6 @@ import io.agora.education.service.CommonService;
 import io.agora.education.service.bean.ResponseBody;
 import io.agora.education.service.bean.request.RoomCreateOptionsReq;
 import io.agora.education.util.AppUtil;
-import io.agora.education.widget.ConfirmDialog;
 import io.agora.education.widget.PolicyDialog;
 
 import static io.agora.education.EduApplication.getAppId;
@@ -189,11 +185,12 @@ public class MainActivity extends BaseActivity {
             return;
         }
 
-        String yourNameStr = et_your_name.getText().toString();
-        if (TextUtils.isEmpty(yourNameStr)) {
+        if (TextUtils.isEmpty(et_your_name.getText().toString())) {
             ToastManager.showShort(R.string.your_name_should_not_be_empty);
             return;
         }
+
+        String yourNameStr = et_your_name.getText().toString() + " Android";
 
         String roomTypeStr = et_room_type.getText().toString();
         if (TextUtils.isEmpty(roomTypeStr)) {
@@ -203,7 +200,8 @@ public class MainActivity extends BaseActivity {
 
         /**userUuid和roomUuid需用户自己指定，并保证唯一性*/
         int roomType = getClassType(roomTypeStr);
-        String userUuid = yourNameStr + EduUserRole.STUDENT.getValue();
+
+        String userUuid = URLEncoder.encode(yourNameStr) + EduUserRole.STUDENT.getValue();
         String roomUuid = roomNameStr;
 
         EduManagerOptions options = new EduManagerOptions(this, getAppId(), userUuid, yourNameStr);
