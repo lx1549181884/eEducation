@@ -243,7 +243,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             EduStreamInfo stream = getLocalCameraStream();
             btn_layout.setVisibility(View.VISIBLE);
             btn_layout_linked.setVisibility(stream == null ? View.GONE : View.VISIBLE);
-            btn_layout_hand_up_down.setVisibility(UserProperty.jhbRole.AUDIENCE == roomEntry.getRole() && stream == null ? View.VISIBLE : View.GONE);
+            btn_layout_hand_up_down.setVisibility(stream == null ? View.VISIBLE : View.GONE);
             btn_switch_mic.setText(stream != null && stream.getHasAudio() ? "关闭麦克风" : "打开麦克风");
             btn_switch_camera.setText(stream != null && stream.getHasVideo() ? "关闭摄像头" : "打开摄像头");
         });
@@ -837,7 +837,7 @@ public class JhbClassActivity extends BaseClassActivity implements TabLayout.OnT
             muteLocalAudio(hasAudio, new EduCallback() {
                 @Override
                 public void onSuccess(@org.jetbrains.annotations.Nullable Object res) {
-                    ToastUtils.showShort(hasAudio ? "已关闭麦克风" : "已关闭麦克风");
+                    ToastUtils.showShort(hasAudio ? "已关闭麦克风" : "已打开麦克风");
                 }
 
                 @Override
